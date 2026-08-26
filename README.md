@@ -21,10 +21,11 @@ Bunun yanında aşağıdaki bilgiler ve hizmetler tek arayüzde toplanır:
 - Kampüs ve Serdivan üzerindeki önemli noktalar
 - Anlaşmalı işletmeler
 - Belediye otobüs hatları ve durak bilgileri
-- Sakarya Üniversitesi Merkez Kütüphanesi bilgileri
+- Sakarya Üniversitesi Merkez Kütüphanesi bilgileri ve çalışma alanı randevusu
 - Sakarya Üniversitesi yemek menüsü
+- Katılacağım etkinlikleri ve kütüphane randevularını birleştiren kişisel takvim
 - Öğrencilere yönelik staj, burs, yarışma ve gönüllülük fırsatları
-- Kullanıcı profili ve ileride kullanılacak N Puan sistemi
+- Şifresiz isim girişi, kullanıcı profili ve ileride kullanılacak N Puan sistemi
 
 Veri yapısı, doğrulanmış bilgilerin kaynağı ve son doğrulama tarihiyle birlikte saklanmasına uygun olarak hazırlanmıştır.
 
@@ -94,11 +95,19 @@ Kullanıcılar akışı **Tümü, Üniversite, Belediye, Topluluklar ve Takip Et
 
 Topluluk kartlarında bulunan **Takip Et** işlemi, ilgili topluluğun duyurularını kişiselleştirilmiş akışa dahil eder. Etkinlik niteliğindeki duyurularda **Katılacağım** ve tüm uygun duyurularda **İlgileniyorum** tercihleri kullanılabilir.
 
-Supabase Auth henüz bağlanmadığında bu tercihler tarayıcının yerel depolamasında tutulur. Auth bağlantısı tamamlandığında aynı işlemler `community_follows` ve `announcement_responses` tabloları üzerinden kullanıcı hesabına bağlı olarak çalışır.
+Bu sürümde kullanıcı ilk açılışta yalnızca **adını yazarak** giriş yapar; parola istenmez. Supabase üzerinde anonim oturum özelliği etkinse bu giriş arka planda benzersiz bir kullanıcı kimliğine bağlanır ve takip, duyuru tercihleri ile kütüphane randevuları RLS kuralları altında Supabase üzerinde saklanabilir. Anonim oturum kapalıysa sistem aynı işlemleri cihaz üzerinde yerel olarak sürdürür.
 
 ---
 
-## 4. Teknoloji Yapısı
+## 4. Kullanıcı Girişi
+
+Mevcut sürümde giriş akışı özellikle basit tutulmuştur. Kullanıcı siteyi ilk açtığında yalnızca **Ad Soyad** alanını doldurur ve **Devam Et** düğmesine basar. Şifre, e-posta veya SMS doğrulaması istenmez.
+
+Girilen ad cihazda saklanır ve Profil ekranında gösterilir. Supabase **Anonymous Sign-Ins** etkinleştirildiğinde aynı akış kullanıcıdan e-posta veya parola istemeden bir Supabase Auth kimliği oluşturur. Böylece kişisel takipler, etkinlik tercihleri ve kütüphane randevuları kullanıcı bazında saklanabilir. Yönetici yetkileri bu basit girişe bağlanmamalıdır.
+
+---
+
+## 5. Teknoloji Yapısı
 
 Frontend tarafı mümkün olduğunca bağımlılığı düşük ve bakım yapılabilir olacak şekilde hazırlanmıştır.
 
@@ -117,7 +126,7 @@ Projede Node.js veya derleme adımı zorunlu değildir. Statik dosyalar doğruda
 
 ---
 
-## 5. Proje Klasör Yapısı
+## 6. Proje Klasör Yapısı
 
 ```text
 NevGenc/
@@ -142,6 +151,7 @@ NevGenc/
 │       │   └── seed.js           Yerel veri başlangıç katmanı
 │       └── services/
 │           ├── supabase.js       Supabase istemcisi
+│           ├── session.js        Geçici şifresiz isim oturumu
 │           └── repositories.js   Veri erişim katmanı
 │
 ├── supabase/
@@ -159,7 +169,7 @@ NevGenc/
 
 ---
 
-## 6. Yerel Ortamda Çalıştırma
+## 7. Yerel Ortamda Çalıştırma
 
 Proje statik olduğu için `index.html` dosyası doğrudan açılabilir. Ancak harita, Supabase ve CDN kaynaklarının doğru çalışması için yerel HTTP sunucusu kullanılması önerilir.
 
@@ -193,7 +203,7 @@ adresine girilir.
 
 ---
 
-## 7. Supabase Kurulumu
+## 8. Supabase Kurulumu
 
 ### 7.1. Yeni Supabase projesi oluşturma
 
@@ -211,6 +221,7 @@ supabase/migrations/003_verified_public_data.sql
 supabase/migrations/004_duyuru_ve_takip.sql
 supabase/migrations/005_duyuru_baslangic_verisi.sql
 supabase/migrations/006_harita_dogrulanmis_koordinatlar.sql
+supabase/migrations/007_kutuphane_randevu_alanlari.sql
 ```
 
 > Mevcut bir NevGenç Supabase veritabanı kullanılıyorsa tüm şemayı yeniden kurmak gerekmez. Harita düzeltmesi için en az `006_harita_dogrulanmis_koordinatlar.sql` dosyasının çalıştırılması gerekir. Frontend, bu migration uygulanmadan önce de yerel doğrulanmış koordinatları yedek olarak kullanır.
@@ -230,7 +241,11 @@ Bu dosyalar:
 
 oluşturur.
 
-### 7.3. Bağlantı bilgilerini ekleme
+### 7.3. Şifresiz kullanıcı oturumunu Supabase ile kalıcılaştırma
+
+Supabase Dashboard → **Authentication → Providers / Sign In Methods** bölümünde **Anonymous Sign-Ins** etkinleştirilir. Bu ayar açık olduğunda kullanıcı yine yalnızca adını yazar; e-posta veya parola istenmez. Arka planda oluşturulan anonim kullanıcı kimliği RLS politikalarıyla kişisel verileri ayırır.
+
+### 7.4. Bağlantı bilgilerini ekleme
 
 Supabase Dashboard → **Project Settings → API** bölümünden:
 
@@ -256,7 +271,7 @@ Frontend üzerinde yalnızca Supabase’in public `anon` anahtarı kullanılmal�
 
 ---
 
-## 8. GitHub Üzerinden Yayınlama
+## 9. GitHub Üzerinden Yayınlama
 
 Proje GitHub deposunun kök dizinine aktarılır.
 
@@ -286,7 +301,7 @@ Ayrıntılı bilgi için `docs/YAYINLAMA.md` dosyasına bakılabilir.
 
 ---
 
-## 9. Harita Sistemi
+## 10. Harita Sistemi
 
 Harita için **Leaflet.js + OpenStreetMap** kullanılmaktadır.
 
@@ -306,7 +321,7 @@ Ulaşım katmanında SAKUS'tan alınan tam durak sırası korunur. Koordinatı a
 
 ---
 
-## 10. Veri Güncelleme İlkesi
+## 11. Veri Güncelleme İlkesi
 
 Projede resmî kaynaklardan gelen bilgiler mümkün olduğunca kaynak URL’si ve doğrulama tarihiyle saklanmaktadır.
 
@@ -325,29 +340,30 @@ Kullanılan açık veri kaynaklarının listesi `docs/VERI-KAYNAKLARI.md` dosyas
 
 ---
 
-## 11. Güvenlik
+## 12. Güvenlik
 
 Projede aşağıdaki temel güvenlik prensipleri uygulanmıştır:
 
 - Supabase `service_role` anahtarı istemci tarafında kullanılmaz.
 - Kullanıcıya özel veriler RLS politikalarıyla korunur.
-- Kullanıcı profil kaydı Supabase Auth kullanıcısıyla ilişkilidir.
+- Mevcut şifresiz isim girişi yalnızca cihaz içi kişiselleştirme sağlar ve güvenli kimlik doğrulama olarak kabul edilmez.
+- Supabase Auth etkinleştirildiğinde kullanıcı profil kaydı doğrulanmış Auth kullanıcısıyla ilişkilendirilir.
 - Haricî bağlantılar yeni sekmede güvenli `rel="noopener"` özelliğiyle açılır.
 - Kullanıcıya gösterilen dinamik metinlerde HTML kaçış işlemi uygulanır.
 - `.env` dosyaları Git tarafından yok sayılır.
 
-Canlıya alınmadan önce alan adı, CORS, Supabase Auth yönlendirme adresleri ve RLS politikalarının kurum ortamında ayrıca kontrol edilmesi önerilir.
+Kurumsal kullanıcı doğrulamasına geçildiğinde alan adı, CORS, Supabase Auth yönlendirme adresleri ve RLS politikalarının kurum ortamında ayrıca kontrol edilmesi önerilir.
 
 ---
 
-## 12. Mevcut Durum ve Sonraki Aşamalar
+## 13. Mevcut Durum ve Sonraki Aşamalar
 
 Mevcut proje; duyuru odaklı ana kullanıcı arayüzünü, topluluk takiplerini, Katılacağım / İlgileniyorum tercihlerini, veri modelini, harita ve ulaşım altyapısını, doğrulanmış açık veri setini ve Supabase veritabanı yapısını içermektedir.
 
 Canlı kullanım öncesinde tamamlanması önerilen başlıca çalışmalar:
 
 1. Kuruma ait Supabase projesinin oluşturulması ve bağlantı bilgilerinin eklenmesi.
-2. Kullanıcı giriş/kayıt akışının kurum tercihlerine göre tamamlanması.
+2. Mevcut ad tabanlı geçici girişin, gerekli görülürse e-posta/kurumsal hesap veya başka bir doğrulama yöntemiyle güçlendirilmesi.
 3. Günlük SAÜ yemek menüsünün otomatik senkronizasyonunun kurulması.
 4. Belediye tarafından sağlanacak doğrulanmış rota geometrileri ve durak koordinatlarının harita katmanına eklenmesi.
 5. Anlaşmalı işletmelerin güncel avantaj/indirim bilgilerinin yönetim ekranından girilmesi.
@@ -356,7 +372,7 @@ Canlı kullanım öncesinde tamamlanması önerilen başlıca çalışmalar:
 
 ---
 
-## 13. Veri Kaynakları
+## 14. Veri Kaynakları
 
 Başlıca kaynaklar:
 
@@ -378,7 +394,7 @@ Anlaşmalı işletme verilerinde işletmelerin kendi resmî kanalları ve proje 
 
 ---
 
-## 14. Teknik Not
+## 15. Teknik Not
 
 Uygulama arayüzü hash tabanlı yönlendirme kullanır:
 

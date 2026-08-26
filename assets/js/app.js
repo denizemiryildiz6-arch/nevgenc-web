@@ -1,6 +1,6 @@
 window.NevGenc = window.NevGenc || {};
 NevGenc.app = (()=>{
-  const routes={anasayfa:NevGenc.views.home,topluluklar:NevGenc.views.communities,harita:NevGenc.views.mapView,firsatlar:NevGenc.views.opportunities,profil:NevGenc.views.profile};
+  const routes={anasayfa:NevGenc.views.home,topluluklar:NevGenc.views.communities,harita:NevGenc.views.mapView,firsatlar:NevGenc.views.opportunities,profil:NevGenc.views.profile,kutuphane:NevGenc.views.libraryView,yemek:NevGenc.views.diningView,takvim:NevGenc.views.calendarView};
   const view=document.getElementById('view');
   function routeName(){return (location.hash.replace(/^#\//,'').split('/')[0]||NevGenc.config.defaultRoute).toLowerCase()}
   function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._timer);t._timer=setTimeout(()=>t.classList.remove('show'),2600)}
@@ -18,7 +18,30 @@ NevGenc.app = (()=>{
     if(route==='topluluklar')await bindCommunities();
     if(route==='harita')await bindMap();
     if(route==='profil')bindProfile();
+    if(route==='kutuphane')bindLibrary();
   }
+  function bindLibrary(){
+    const form=document.getElementById('library-reservation-form');
+    form?.addEventListener('submit',async e=>{
+      e.preventDefault();
+      const date=document.getElementById('reservation-date')?.value;
+      const start=document.getElementById('reservation-start')?.value;
+      const end=document.getElementById('reservation-end')?.value;
+      const spaceId=document.getElementById('reservation-space')?.value;
+      if(!date||!start||!end||!spaceId){toast('Lütfen randevu bilgilerini tamamla.');return;}
+      const startsAt=new Date(`${date}T${start}:00`),endsAt=new Date(`${date}T${end}:00`);
+      if(endsAt<=startsAt){toast('Bitiş saati başlangıçtan sonra olmalı.');return;}
+      const submit=form.querySelector('button[type="submit"]');if(submit)submit.disabled=true;
+      try{await NevGenc.repositories.createLibraryReservation({spaceId,startsAt,endsAt});toast('Kütüphane randevun oluşturuldu.');await render();}
+      catch(err){console.error(err);toast(err?.message||'Randevu oluşturulamadı.');}
+      finally{if(submit)submit.disabled=false;}
+    });
+    document.getElementById('reservation-list')?.addEventListener('click',async e=>{
+      const b=e.target.closest('[data-cancel-reservation]');if(!b)return;
+      b.disabled=true;await NevGenc.repositories.cancelLibraryReservation(b.dataset.cancelReservation);toast('Randevu iptal edildi.');await render();
+    });
+  }
+
   function bindProfile(){
     document.querySelector('[data-open-name-login]')?.addEventListener('click',()=>NevGenc.session.showLogin());
     document.querySelector('[data-edit-profile-name]')?.addEventListener('click',()=>NevGenc.session.showLogin({editing:true}));
@@ -126,7 +149,7 @@ NevGenc.app = (()=>{
     const overlay=document.getElementById('search-overlay'),input=document.getElementById('global-search-input'),results=document.getElementById('global-search-results');
     const open=()=>{overlay.hidden=false;setTimeout(()=>input.focus(),20)},close=()=>{overlay.hidden=true;input.value='';results.innerHTML=''};
     document.getElementById('global-search-button').addEventListener('click',open);document.getElementById('search-close').addEventListener('click',close);overlay.addEventListener('click',e=>{if(e.target===overlay)close()});
-    input.addEventListener('input',async()=>{const q=input.value.trim().toLocaleLowerCase('tr');if(q.length<2){results.innerHTML='';return}const [cs,ps,as]=await Promise.all([NevGenc.repositories.communities(),NevGenc.repositories.partners(),NevGenc.repositories.announcements()]);const items=[...cs.data.map(x=>({...x,_name:x.name,_type:'Topluluk',_route:'#/topluluklar'})),...ps.data.map(x=>({...x,_name:x.name,_type:'İşletme',_route:'#/harita'})),...as.data.map(x=>({...x,_name:x.title,_type:'Duyuru',_route:'#/anasayfa'}))].filter(x=>(x._name||'').toLocaleLowerCase('tr').includes(q)).slice(0,10);results.innerHTML=items.map(x=>`<a class="search-result" href="${x._route}"><strong>${x._name}</strong><span>${x._type}</span></a>`).join('')||'<div class="empty-state" style="padding:18px">Sonuç bulunamadı.</div>'});
+    input.addEventListener('input',async()=>{const q=input.value.trim().toLocaleLowerCase('tr');if(q.length<2){results.innerHTML='';return}const [cs,ps,as]=await Promise.all([NevGenc.repositories.communities(),NevGenc.repositories.partners(),NevGenc.repositories.announcements()]);const services=[{_name:'Kütüphane randevusu',_type:'Hizmet',_route:'#/kutuphane'},{_name:'Yemek menüsü',_type:'Hizmet',_route:'#/yemek'},{_name:'Takvimim',_type:'Hizmet',_route:'#/takvim'}];const items=[...cs.data.map(x=>({...x,_name:x.name,_type:'Topluluk',_route:'#/topluluklar'})),...ps.data.map(x=>({...x,_name:x.name,_type:'İşletme',_route:'#/harita'})),...as.data.map(x=>({...x,_name:x.title,_type:'Duyuru',_route:'#/anasayfa'})),...services].filter(x=>(x._name||'').toLocaleLowerCase('tr').includes(q)).slice(0,10);results.innerHTML=items.map(x=>`<a class="search-result" href="${x._route}"><strong>${x._name}</strong><span>${x._type}</span></a>`).join('')||'<div class="empty-state" style="padding:18px">Sonuç bulunamadı.</div>'});
     results.addEventListener('click',()=>close());document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!overlay.hidden)close()});
   }
   function init(){window.addEventListener('hashchange',render);window.addEventListener('nevgenc:session-changed',()=>render());NevGenc.session.bind();if(!location.hash)location.hash='#/anasayfa';bindSearch();document.getElementById('notifications-button').addEventListener('click',()=>{location.hash='#/anasayfa';toast('Duyurular ana sayfada güncel akış olarak gösteriliyor.')});render();NevGenc.session.requireName()}

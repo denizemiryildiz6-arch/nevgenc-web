@@ -106,3 +106,8 @@ alanları gerçek yayın adresine göre düzenlenmelidir.
 - [ ] Auth yönlendirme URL’leri ayarlandı.
 - [ ] Mobil görünüm kontrol edildi.
 - [ ] GitHub Pages yayını başarıyla tamamlandı.
+
+
+## Şifresiz isim girişi
+
+Mevcut kullanıcı girişi istemci tarafında çalışır ve ek bir Supabase ayarı gerektirmez. Kullanıcının yazdığı ad tarayıcının yerel depolamasında tutulur. Bu yöntem yönetici yetkilendirmesi veya hassas veri erişimi için kullanılmamalıdır. Kurumsal kimlik doğrulama gerektiğinde Supabase Auth ayrıca etkinleştirilmelidir.

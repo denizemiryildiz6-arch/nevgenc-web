@@ -1,0 +1,26 @@
+NEVGENÇ V10 - REPO GÜNCELLEMESİ
+
+Bu paket mevcut GitHub reposunun KÖK dizinine uygulanmalıdır.
+ZIP'i açın ve içindeki dosya/klasörlerin TAMAMINI repo köküne yükleyerek aynı isimli dosyaların üzerine yazın.
+
+ÖNEMLİ:
+- assets/js/config.js bu pakete bilerek eklenmemiştir.
+- Böylece mevcut Supabase URL ve Publishable Key değerleriniz silinmez.
+- Dosyaları yeni bir üst klasör içine yüklemeyin. index.html repo ana ekranında doğrudan görünmelidir.
+
+Bu sürümde geri getirilen / düzeltilen başlıca bölümler:
+- Kütüphane sayfası ve randevu oluşturma
+- Yemek menüsü sayfası
+- Kişisel takvim
+- Profil içi hızlı hizmet bağlantıları
+- Ana sayfada kampüs hizmetleri kısayolları
+- Şifresiz isim girişi
+- İsteğe bağlı Supabase Anonymous Auth desteği
+- Mobil haritada yatay sayfa kaymasını engelleyen sabit harita görünümü
+- Mobil harita filtreleri, konum şeridi, otobüs hatları ve alttan açılan durak paneli
+
+Supabase SQL Editor'de mevcut migration'ların ardından şu dosyayı bir kez çalıştırın:
+supabase/migrations/007_kutuphane_randevu_alanlari.sql
+
+Şifresiz girişin Supabase'e kullanıcı bazında bağlanması isteniyorsa:
+Supabase > Authentication > Providers / Sign In Methods > Anonymous Sign-Ins = Enabled

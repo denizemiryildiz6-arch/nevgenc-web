@@ -4,6 +4,7 @@ NevGenc.repositories = (() => {
   const official = (data) => ({data, source:'official'});
   const LOCAL_FOLLOWS='nevgenc-followed-communities-v1';
   const LOCAL_RESPONSES='nevgenc-announcement-responses-v1';
+  const LOCAL_LIBRARY_RESERVATIONS='nevgenc-library-reservations-v1';
 
   async function fromTable(table, queryBuilder, fallback){
     const c = NevGenc.supabase.getClient();
@@ -228,6 +229,66 @@ NevGenc.repositories = (() => {
       return {active:!active,local:false};
     }catch(err){console.warn('[NevGenç] duyuru tercihi yerel olarak saklandı',err);return {active:!active,local:true};}
   }
+
+  async function librarySpaces(){
+    const fallback=[
+      {id:'local-individual',name:'Bireysel Çalışma Alanı',capacity:null,reservable:true,is_active:true},
+      {id:'local-group',name:'Grup Çalışma Alanı',capacity:null,reservable:true,is_active:true}
+    ];
+    const r=await fromTable('library_spaces',q=>q.eq('is_active',true).order('name'),fallback);
+    const data=(r.data||[]).filter(x=>x.reservable!==false);
+    return {data:data.length?data:fallback,source:r.source};
+  }
+  function readLocalReservations(){
+    try{return JSON.parse(localStorage.getItem(LOCAL_LIBRARY_RESERVATIONS)||'[]')}catch{return []}
+  }
+  function saveLocalReservations(items){try{localStorage.setItem(LOCAL_LIBRARY_RESERVATIONS,JSON.stringify(items))}catch{}}
+  async function libraryReservations(){
+    const local=readLocalReservations();
+    const c=NevGenc.supabase.getClient(); const user=await NevGenc.supabase.currentUser();
+    if(!c||!user)return {data:local,source:'local'};
+    try{
+      const {data,error}=await c.from('library_reservations').select('id,space_id,starts_at,ends_at,status,library_spaces(name)').eq('user_id',user.id).order('starts_at',{ascending:true});
+      if(error)throw error;
+      return {data:(data||[]).map(x=>({id:x.id,spaceId:x.space_id,spaceName:x.library_spaces?.name||'Çalışma alanı',startsAt:x.starts_at,endsAt:x.ends_at,status:x.status||'confirmed'})),source:'supabase'};
+    }catch(err){console.warn('[NevGenç] kütüphane randevuları yerel kayıttan gösteriliyor',err);return {data:local,source:'local'};}
+  }
+  async function createLibraryReservation(input){
+    const startsAt=new Date(input.startsAt), endsAt=new Date(input.endsAt);
+    if(!input.spaceId||Number.isNaN(startsAt.getTime())||Number.isNaN(endsAt.getTime())||endsAt<=startsAt)throw new Error('Tarih ve saat aralığını kontrol edin.');
+    const c=NevGenc.supabase.getClient(); const user=await NevGenc.supabase.currentUser();
+    const isLocalSpace=String(input.spaceId).startsWith('local-');
+    if(c&&user&&!isLocalSpace){
+      try{
+        const {data,error}=await c.from('library_reservations').insert({user_id:user.id,space_id:input.spaceId,starts_at:startsAt.toISOString(),ends_at:endsAt.toISOString(),status:'confirmed'}).select('id').single();
+        if(error)throw error;
+        return {id:data.id,source:'supabase'};
+      }catch(err){console.warn('[NevGenç] randevu yerel kayda alındı',err);}
+    }
+    const spaces=await librarySpaces(); const space=spaces.data.find(x=>String(x.id)===String(input.spaceId));
+    const items=readLocalReservations();
+    const item={id:(crypto.randomUUID?crypto.randomUUID():`local-${Date.now()}`),spaceId:input.spaceId,spaceName:space?.name||'Çalışma alanı',startsAt:startsAt.toISOString(),endsAt:endsAt.toISOString(),status:'confirmed',createdAt:new Date().toISOString()};
+    items.push(item);saveLocalReservations(items);return {id:item.id,source:'local'};
+  }
+  async function cancelLibraryReservation(id){
+    const c=NevGenc.supabase.getClient(); const user=await NevGenc.supabase.currentUser();
+    if(c&&user&&!String(id).startsWith('local-')){
+      try{const {error}=await c.from('library_reservations').update({status:'cancelled'}).eq('id',id).eq('user_id',user.id);if(error)throw error;return {ok:true,source:'supabase'}}catch(err){console.warn('[NevGenç] randevu iptali yerel kayda uygulanıyor',err)}
+    }
+    const items=readLocalReservations().map(x=>x.id===id?{...x,status:'cancelled'}:x);saveLocalReservations(items);return {ok:true,source:'local'};
+  }
+  async function diningMenusRange(startDate,endDate){
+    const c=NevGenc.supabase.getClient();
+    if(!c)return {data:[],source:'official-link'};
+    const key=d=>{const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0');return `${y}-${m}-${dd}`};
+    try{
+      const {data:menus,error}=await c.from('dining_menus').select('id,menu_date,source_url,verified_at').gte('menu_date',key(startDate)).lte('menu_date',key(endDate)).order('menu_date');
+      if(error)throw error;if(!menus?.length)return {data:[],source:'official-link'};
+      const ids=menus.map(x=>x.id);const {data:items,error:iErr}=await c.from('dining_menu_items').select('menu_id,item_order,name,calories').in('menu_id',ids).order('item_order');if(iErr)throw iErr;
+      return {data:menus.map(m=>({...m,items:(items||[]).filter(x=>x.menu_id===m.id)})),source:'supabase'};
+    }catch(err){console.warn('[NevGenç] haftalık menü alınamadı',err);return {data:[],source:'official-link'};}
+  }
+
   async function diningMenu(date=new Date()){
     const yyyy=date.getFullYear(), mm=String(date.getMonth()+1).padStart(2,'0'), dd=String(date.getDate()).padStart(2,'0');
     const key=`${yyyy}-${mm}-${dd}`;
@@ -244,13 +305,18 @@ NevGenc.repositories = (() => {
   return {
     communities,partners,locations,announcements,
     opportunities:()=>fromTable('opportunities',q=>q.eq('is_published',true).order('published_at',{ascending:false}),[]),
-    transportLines,transportLineDetail,diningMenu,
+    transportLines,transportLineDetail,diningMenu,diningMenusRange,librarySpaces,libraryReservations,createLibraryReservation,cancelLibraryReservation,
     followedCommunitySlugs,toggleCommunityFollow,announcementResponses,toggleAnnouncementResponse,
     profile: async()=>{
-      const user=await NevGenc.supabase.currentUser(); if(!user) return null;
+      const localSession=NevGenc.session?.get?.()||null;
+      const user=await NevGenc.supabase.currentUser();
+      if(!user){
+        if(!localSession)return null;
+        return {user:null,local:true,profile:{full_name:localSession.name,n_points:0}};
+      }
       const c=NevGenc.supabase.getClient();
       const {data}=await c.from('profiles').select('*').eq('id',user.id).maybeSingle();
-      return {user,profile:data};
+      return {user,local:false,profile:{full_name:data?.full_name||localSession?.name||user.email||'Kullanıcı',...data}};
     }
   };
 })();

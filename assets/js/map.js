@@ -50,7 +50,8 @@ NevGenc.map = (() => {
   function popupHtml(x){
     const query=validPoint(x)?`${x.lat},${x.lng}`:(x.address||x.name);
     const maps=`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
-    return `<div class="map-popup"><h3>${escape(x.name)}</h3><p>${escape(x.address||x.category||'')}</p>${x.phone?`<p>${escape(x.phone)}</p>`:''}<a href="${maps}" target="_blank" rel="noopener">Yol tarifi ↗</a></div>`;
+    const serviceLink=x.type==='library'?'<a href="#/kutuphane">Kütüphane ve randevu →</a>':x.type==='dining'?'<a href="#/yemek">Yemek menüsünü aç →</a>':'';
+    return `<div class="map-popup"><h3>${escape(x.name)}</h3><p>${escape(x.address||x.category||'')}</p>${x.phone?`<p>${escape(x.phone)}</p>`:''}<div class="map-popup-links">${serviceLink}<a href="${maps}" target="_blank" rel="noopener">Yol tarifi ↗</a></div></div>`;
   }
   function stopPopupHtml(name,sourceUrl,lineCode=''){
     return `<div class="map-popup"><h3>${escape(name)}</h3><p>${lineCode?`Hat ${escape(lineCode)} üzerinde doğrulanmış durak konumu`:'Doğrulanmış belediye otobüs durağı'}</p>${sourceUrl?`<a href="${escape(sourceUrl)}" target="_blank" rel="noopener">Konum kaynağını aç ↗</a>`:''}</div>`;

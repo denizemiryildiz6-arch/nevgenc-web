@@ -61,9 +61,9 @@ Ulaşım verisi üç ana tabloyla modellenmiştir:
 
 ## Kimlik doğrulama
 
-Supabase Auth kullanılacak şekilde hazırlanmıştır.
+Kullanıcı deneyiminin ilk aşamasında `session.js` üzerinden ad tabanlı, parolasız bir yerel oturum kullanılır. Bu oturum yalnızca kişiselleştirme amaçlıdır. Mimari, gerektiğinde Supabase Auth ile doğrulanmış hesaba geçilebilecek şekilde korunmuştur.
 
-Kullanıcı hesabı ile `profiles` tablosu aynı UUID üzerinden ilişkilidir.
+Supabase Auth etkinleştirildiğinde kullanıcı hesabı ile `profiles` tablosu aynı UUID üzerinden ilişkilendirilir. Geçici ad oturumu bu ilişki yerine geçmez.
 
 `service_role` anahtarı frontend tarafında kullanılmaz.
 
@@ -82,6 +82,6 @@ Kullanıcı etkileşimleri iki ayrı tabloda saklanır:
 - `community_follows`: kullanıcının takip ettiği topluluklar
 - `announcement_responses`: kullanıcının bir duyuru/etkinlik için `interested` veya `attending` tercihi
 
-Ana sayfadaki "Takip Ettiklerim" filtresi, bu iki katmanın topluluk ilişkisini kullanacak şekilde hazırlanmıştır. Kullanıcı oturumu yokken arayüz davranışının test edilebilmesi için aynı tercihler yerel depolamada saklanır; oturum açıldığında Supabase verisi esas alınır.
+Ana sayfadaki "Takip Ettiklerim" filtresi, bu iki katmanın topluluk ilişkisini kullanacak şekilde hazırlanmıştır. Mevcut ad tabanlı oturumda tercihler yerel depolamada saklanır. Doğrulanmış Supabase Auth oturumu devreye alındığında Supabase verisi esas alınabilir.
 
 Harita ulaşım katmanında hat ve durak sırası resmî veri kaynağıyla gösterilir. Başlangıç veri setinde koordinatı ayrıca doğrulanmış bazı kampüs/Serdivan durakları doğrudan haritada işaretlenir. Bir hat seçildiğinde bu doğrulanmış noktalar ilgili hat üzerinde görünür, hattın tüm durakları panelde resmî sırasıyla listelenir. Tam güzergâh geometrisi (`route_geojson`) belediye veri kaynağından sağlandığında mevcut harita kodu rotayı otomatik olarak çizer. Koordinatı bulunmayan duraklara tahmini nokta verilmez.

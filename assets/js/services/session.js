@@ -12,7 +12,27 @@ NevGenc.session = (() => {
       return {...data, name: normalizeName(data.name)};
     }catch{return null;}
   }
-  function saveName(value){
+  async function syncAnonymousSession(name){
+    const c=NevGenc.supabase?.getClient?.();
+    if(!c)return {synced:false};
+    try{
+      const {data:sessionData}=await c.auth.getSession();
+      let user=sessionData?.session?.user||null;
+      if(!user){
+        const {data,error}=await c.auth.signInAnonymously({options:{data:{full_name:name,name}}});
+        if(error)throw error;
+        user=data?.user||data?.session?.user||null;
+      }
+      if(user){
+        await c.from('profiles').update({full_name:name,updated_at:new Date().toISOString()}).eq('id',user.id);
+        return {synced:true,user};
+      }
+    }catch(err){
+      console.warn('[NevGenç] anonim Supabase oturumu kullanılamadı; cihaz oturumu devam ediyor',err);
+    }
+    return {synced:false};
+  }
+  async function saveName(value){
     const name = normalizeName(value);
     if(name.length < 2) return {ok:false,message:'Lütfen adınızı en az 2 karakter olacak şekilde girin.'};
     const current = get();
@@ -22,11 +42,15 @@ NevGenc.session = (() => {
       updatedAt: new Date().toISOString()
     };
     localStorage.setItem(KEY, JSON.stringify(session));
-    window.dispatchEvent(new CustomEvent('nevgenc:session-changed',{detail:session}));
-    return {ok:true,session};
+    const sync=await syncAnonymousSession(name);
+    const complete={...session,supabaseSynced:sync.synced};
+    localStorage.setItem(KEY,JSON.stringify(complete));
+    window.dispatchEvent(new CustomEvent('nevgenc:session-changed',{detail:complete}));
+    return {ok:true,session:complete};
   }
-  function signOut(){
+  async function signOut(){
     localStorage.removeItem(KEY);
+    try{await NevGenc.supabase?.getClient?.()?.auth?.signOut?.()}catch{}
     window.dispatchEvent(new CustomEvent('nevgenc:session-changed',{detail:null}));
   }
   function showLogin({editing=false}={}){
@@ -59,10 +83,13 @@ NevGenc.session = (() => {
     const form=document.getElementById('login-form');
     const input=document.getElementById('login-name');
     const error=document.getElementById('login-error');
+    const submit=document.getElementById('login-submit');
     if(!overlay||!form||!input)return;
-    form.addEventListener('submit',e=>{
+    form.addEventListener('submit',async e=>{
       e.preventDefault();
-      const result=saveName(input.value);
+      if(submit)submit.disabled=true;
+      const result=await saveName(input.value);
+      if(submit)submit.disabled=false;
       if(!result.ok){error.textContent=result.message;input.focus();return;}
       hideLogin();
     });
