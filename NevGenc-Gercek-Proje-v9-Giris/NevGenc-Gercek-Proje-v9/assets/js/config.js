@@ -3,8 +3,8 @@ NevGenc.config = {
   appName: 'NevGenç',
   defaultRoute: 'anasayfa',
   supabase: {
-    url: '',
-    anonKey: ''
+    url: 'https://kudrmtszrxyaweyhutzb.supabase.co',
+    anonKey: 'sb_publishable_sLet470-Q9ZeLpnqdp1WaQ_AuYvAneh'
   },
   map: {
     center: [40.741009, 30.332767],
