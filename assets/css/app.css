@@ -33,7 +33,46 @@
 @media(max-width:900px){.home-content-grid{grid-template-columns:minmax(0,1fr) 250px}.feed-header{align-items:flex-start}.feed-summary{display:none}}
 @media(max-width:680px){.feed-header{display:block;margin-top:0}.feed-header h1{font-size:34px;letter-spacing:-1.1px}.feed-header p{font-size:12px}.feed-toolbar{padding:7px;margin-bottom:10px}.feed-filters{width:100%}.feed-source{display:none}.home-content-grid{display:block}.home-sidebar{position:static;margin-top:11px}.announcement-card{padding:16px 15px 14px}.announcement-head{align-items:flex-start}.announcement-source{flex-wrap:wrap}.announcement-date{font-size:9px}.announcement-card h2{font-size:16px}.announcement-actions{gap:6px}.action-button{height:32px;padding:0 8px}.announcement-link{width:100%;margin-left:0;padding-top:3px}.map-panel{max-height:44vh;overflow:auto}.location-list{display:grid;max-height:145px;overflow:auto}.transport-lines{grid-template-columns:repeat(2,minmax(0,1fr));max-height:150px;overflow:auto}.line-chip{grid-template-columns:34px 1fr;padding:6px}.line-chip strong{height:28px}.transport-stop-list{max-height:130px}}
 
-/* Harita v8: doğrulanmış sabit konumlar ve ulaşım katmanı */
+/* Doğrulanmış sabit konumlar ve ulaşım katmanı */
 .map-legend{position:absolute;right:12px;top:12px;z-index:500;display:flex;gap:7px;flex-wrap:wrap;max-width:min(520px,calc(100% - 24px));padding:8px 10px;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow-sm)}
 .map-legend span{display:inline-flex;align-items:center;gap:5px;font-size:9px;font-weight:750;color:#5d7288;white-space:nowrap}.legend-dot{width:8px;height:8px;border-radius:3px;background:var(--navy);display:inline-block}.legend-dot.library{background:#6d5bd0}.legend-dot.dining{background:#bd7a0b}.legend-dot.partner{background:#1687e8}.legend-dot.stop{background:#0f8f78}.marker-pin.stop{background:#0f8f78}.marker-pin.overview-stop{width:30px;height:30px;border-radius:10px}.marker-pin.overview-stop svg{width:14px;height:14px}.transport-map-note{margin:7px 0 8px;padding:8px 9px;border-radius:9px;background:#f2f8fd;color:#61798f;font-size:9px;line-height:1.45}.transport-stop-list li{grid-template-columns:23px 1fr 12px}.transport-stop-list li.has-map-point{cursor:pointer;border:1px solid transparent}.transport-stop-list li.has-map-point:hover,.transport-stop-list li.has-map-point:focus{outline:none;border-color:#b8d8f1;background:#eef8ff}.transport-stop-list li i{font-style:normal;color:#0f8f78;font-size:9px;text-align:center}.transport-stop-summary strong{color:var(--ink)}
 @media(max-width:680px){.map-legend{right:8px;top:8px;max-width:calc(100% - 16px);padding:6px 8px;gap:5px}.map-legend span{font-size:8px}.map-legend span:nth-child(1){display:none}}
+
+/* İsim tabanlı geçici giriş */
+.login-open{overflow:hidden}.login-overlay{position:fixed;inset:0;z-index:200;background:rgba(8,27,48,.42);backdrop-filter:blur(10px);display:grid;place-items:center;padding:20px}.login-overlay[hidden]{display:none}.login-dialog{width:min(430px,100%);background:#fff;border:1px solid var(--line);border-radius:24px;box-shadow:0 34px 100px rgba(10,34,61,.24);padding:26px}.login-brand{display:flex;align-items:center;gap:10px;margin-bottom:28px;color:var(--navy);font-size:17px;font-weight:850}.login-brand img{width:40px;height:40px;border-radius:12px;object-fit:cover;border:1px solid #e2ebf4}.login-dialog h2{margin:6px 0 8px;font-size:28px;letter-spacing:-.7px}.login-dialog>p{margin:0 0 20px;color:var(--muted);font-size:12px;line-height:1.65}.login-field{display:grid;gap:7px}.login-field span{font-size:10px;font-weight:800;color:#5f7388}.login-field input{width:100%;height:48px;border:1px solid var(--line);border-radius:12px;padding:0 13px;outline:0;font:inherit;font-size:13px;color:var(--ink);background:#fff}.login-field input:focus{border-color:#8fc3eb;box-shadow:0 0 0 3px rgba(22,135,232,.08)}.login-error{min-height:18px;padding-top:6px;color:#b54646;font-size:10px}.login-submit{width:100%;margin-top:4px}.login-dialog .login-note{margin:14px 0 0;padding-top:13px;border-top:1px solid var(--line);font-size:9px;line-height:1.55;color:#8899aa}.profile-identity h2{margin:0 0 3px}.profile-identity p{margin:0}.profile-actions{display:flex;gap:8px;margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}.button.subtle-danger{color:#a74848;background:#fff;border-color:#ecd2d2}.button.subtle-danger:hover{background:#fff7f7;border-color:#dfa9a9}.profile-session-note{margin-top:12px;padding:10px 12px;border-radius:11px;background:#f6f9fc;color:#7a8da0;font-size:9px;line-height:1.55}
+@media(max-width:680px){.login-overlay{padding:14px}.login-dialog{border-radius:20px;padding:22px}.login-brand{margin-bottom:22px}.login-dialog h2{font-size:25px}.profile-actions{display:grid;grid-template-columns:1fr 1fr}.profile-actions .button{width:100%}}
+
+
+/* Mobil kararlılık ve harita kullanım iyileştirmeleri */
+html,body{width:100%;max-width:100%;overflow-x:hidden}body{overscroll-behavior-x:none}.app-shell,.view,.page{max-width:100%}.chips,.map-filters,.transport-lines{-webkit-overflow-scrolling:touch;scrollbar-width:none}.chips::-webkit-scrollbar,.map-filters::-webkit-scrollbar,.transport-lines::-webkit-scrollbar{display:none}.leaflet-container{max-width:100%;touch-action:none;overscroll-behavior:contain}.transport-detail-close{display:none;border:0;background:#eef4f9;color:#60758b;width:30px;height:30px;border-radius:9px;font-size:20px;line-height:1;cursor:pointer}
+
+@media(max-width:680px){
+  body.map-route{height:100vh;height:100dvh;overflow:hidden;overscroll-behavior:none}
+  body.map-route .app-shell{height:100vh;height:100dvh;min-height:0;overflow:hidden;padding-bottom:0}
+  body.map-route .topbar{position:relative;height:64px;flex:0 0 64px}
+  body.map-route .view{width:100%;height:calc(100vh - 64px - var(--dock-h) - var(--safe-bottom));height:calc(100dvh - 64px - var(--dock-h) - var(--safe-bottom));margin:0;padding:0;overflow:hidden}
+  body.map-route .map-page,body.map-route .map-layout{width:100%;height:100%;min-height:0;margin:0}
+  body.map-route .map-layout{position:relative;display:block}
+  body.map-route .map-card{position:absolute;inset:0;border:0;border-radius:0;overflow:hidden}
+  body.map-route .map-canvas{position:absolute;inset:0;width:100%;height:100%}
+  body.map-route .map-panel{position:absolute;z-index:650;top:8px;left:8px;right:8px;padding:0;max-height:none;overflow:visible;background:transparent;border:0;box-shadow:none;pointer-events:none}
+  body.map-route .map-panel-head,body.map-route .map-section-label,body.map-route .location-list,body.map-route .source-note{display:none}
+  body.map-route .map-filters{pointer-events:auto;width:100%;display:flex;flex-wrap:nowrap;gap:6px;padding:6px;margin:0;overflow-x:auto;background:rgba(255,255,255,.95);backdrop-filter:blur(14px);border:1px solid rgba(214,226,238,.95);border-radius:14px;box-shadow:0 8px 24px rgba(14,45,79,.11)}
+  body.map-route .map-filters .chip{flex:0 0 auto;min-height:34px;padding:8px 11px}
+  body.map-route .transport-lines{display:none;pointer-events:auto;margin-top:7px;padding:6px;gap:6px;overflow-x:auto;overflow-y:hidden;background:rgba(255,255,255,.95);backdrop-filter:blur(14px);border:1px solid rgba(214,226,238,.95);border-radius:14px;box-shadow:0 8px 24px rgba(14,45,79,.11)}
+  body.map-route .map-page.transport-active .transport-lines{display:flex}
+  body.map-route .line-chip{flex:0 0 auto;width:50px;min-width:50px;height:42px;display:block;padding:5px;border-radius:10px;text-align:center}
+  body.map-route .line-chip strong{width:100%;height:30px;border-radius:8px;font-size:11px}
+  body.map-route .line-chip span{display:none}
+  body.map-route .transport-detail{display:none;position:fixed;z-index:760;left:8px;right:8px;bottom:calc(var(--dock-h) + var(--safe-bottom) + 8px);margin:0;max-height:min(38dvh,310px);overflow:auto;padding:14px;background:rgba(255,255,255,.98);backdrop-filter:blur(16px);border:1px solid rgba(208,222,235,.98);border-radius:18px;box-shadow:0 18px 55px rgba(12,35,66,.2);pointer-events:auto;-webkit-overflow-scrolling:touch}
+  body.map-route .map-page.line-selected .transport-detail{display:block}
+  body.map-route .transport-detail-close{display:grid;place-items:center;position:absolute;right:10px;top:10px}
+  body.map-route .transport-detail-head{padding-right:36px}
+  body.map-route .transport-stop-list{max-height:none;overflow:visible;padding-bottom:3px}
+  body.map-route .map-legend{display:none}
+  body.map-route .map-status{left:8px;right:auto;bottom:8px;max-width:calc(100% - 80px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  body.map-route .map-page.line-selected .map-status{display:none}
+  body.map-route .leaflet-control-zoom{margin-right:10px!important;margin-bottom:10px!important}
+  body.map-route .leaflet-control-attribution{font-size:7px!important;max-width:62vw;white-space:normal;line-height:1.2}
+  body.map-route .bottom-nav{z-index:800}
+}

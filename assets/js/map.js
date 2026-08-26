@@ -9,6 +9,8 @@ NevGenc.map = (() => {
   let allLocations = [];
   let activeFilter = 'all';
   let selectedLine = null;
+  let resizeHandler = null;
+  let resizeTimer = null;
 
   const iconSvg = {
     partner:'<svg viewBox="0 0 24 24"><path d="M4 10h16M5 10l1-5h12l1 5M6 10v9h12v-9M9 19v-5h6v5"/></svg>',
@@ -245,13 +247,22 @@ NevGenc.map = (() => {
   async function init(el,locations,status){
     statusEl=status;allLocations=[...locations];
     if(!window.L){if(statusEl)statusEl.textContent='Harita bileşeni yüklenemedi.';return []}
+    if(resizeHandler){window.removeEventListener('resize',resizeHandler);window.visualViewport?.removeEventListener('resize',resizeHandler);resizeHandler=null}
     if(map){map.remove();map=null}
     markers=[];routeLayers=[];routeStopMarkers=[];overviewStopMarkers=[];activeFilter='all';selectedLine=null;
-    map=L.map(el,{zoomControl:true}).setView(NevGenc.config.map.center,NevGenc.config.map.zoom);
+    const mobile=window.matchMedia('(max-width: 680px)').matches;
+    map=L.map(el,{zoomControl:true,preferCanvas:true,inertia:true,bounceAtZoomLimits:false,scrollWheelZoom:!mobile}).setView(NevGenc.config.map.center,NevGenc.config.map.zoom);
+    if(mobile)map.zoomControl.setPosition('bottomright');
     L.tileLayer(NevGenc.config.map.tiles,{maxZoom:19,attribution:NevGenc.config.map.attribution}).addTo(map);
     renderKnown(allLocations);
     renderTransportOverview();
-    setTimeout(()=>{map.invalidateSize();fitAll()},100);
+    setTimeout(()=>{map.invalidateSize({pan:false});fitAll()},120);
+    resizeHandler=()=>{
+      clearTimeout(resizeTimer);
+      resizeTimer=setTimeout(()=>{if(map)map.invalidateSize({pan:false,animate:false})},90);
+    };
+    window.addEventListener('resize',resizeHandler,{passive:true});
+    window.visualViewport?.addEventListener('resize',resizeHandler,{passive:true});
     if(statusEl)statusEl.textContent=`${markers.length} temel konum · ${overviewStopMarkers.length} doğrulanmış otobüs durağı haritada`;
     resolveMissingInBackground(allLocations);
     return allLocations;

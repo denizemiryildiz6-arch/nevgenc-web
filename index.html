@@ -69,6 +69,27 @@
     </div>
   </div>
 
+  <div class="login-overlay" id="login-overlay" hidden>
+    <div class="login-dialog" role="dialog" aria-modal="true" aria-labelledby="login-title">
+      <div class="login-brand">
+        <img src="assets/img/nevgenc-logo.png" alt="NevGenç logosu">
+        <span>NevGenç</span>
+      </div>
+      <span class="eyebrow">KULLANICI GİRİŞİ</span>
+      <h2 id="login-title">NevGenç’e hoş geldin</h2>
+      <p id="login-copy">Devam etmek için yalnızca adını girmen yeterli. Şifre istenmez.</p>
+      <form id="login-form" novalidate>
+        <label class="login-field">
+          <span>Ad Soyad</span>
+          <input id="login-name" name="name" type="text" maxlength="60" autocomplete="name" placeholder="Örn. Deniz Emir Yıldız" required>
+        </label>
+        <div class="login-error" id="login-error" aria-live="polite"></div>
+        <button class="button primary login-submit" id="login-submit" type="submit">Devam Et</button>
+      </form>
+      <p class="login-note">Bu sürümde giriş adı yalnızca bu cihazda saklanır. Hesap doğrulaması veya parola kullanılmaz.</p>
+    </div>
+  </div>
+
   <div class="toast" id="toast" role="status"></div>
 
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -78,6 +99,7 @@
   <script src="assets/js/data/announcements.js"></script>
   <script src="assets/js/data/seed.js"></script>
   <script src="assets/js/services/supabase.js"></script>
+  <script src="assets/js/services/session.js"></script>
   <script src="assets/js/services/repositories.js"></script>
   <script src="assets/js/map.js"></script>
   <script src="assets/js/views.js"></script>
