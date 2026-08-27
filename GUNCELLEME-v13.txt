@@ -1,0 +1,31 @@
+NEVGENÇ v13 — TOPLULUK SAYFALARI VE YÖNETİM PANELİ
+
+Bu sürüm mevcut kullanıcı özelliklerini koruyarak topluluk yönetimini gerçek kullanıma uygun hale getirir.
+
+YENİ ÖZELLİKLER
+- Topluluk kartları artık NevGenç içindeki topluluk sayfasını açar.
+- Topluluk sayfasında yöneticiler en üstte gösterilir.
+- Topluluk gönderileri en yeniden eskiye sıralanır.
+- Topluluk yöneticileri metin, fotoğraf veya metin + fotoğraf paylaşabilir.
+- Gönderiler yönetim panelinden yayından kaldırılabilir.
+- Topluluk için isteğe bağlı ortak iletişim e-postası tanımlanabilir.
+- Her yönetici kendi görünen adını, görevini ve isteğe bağlı kamuya açık e-postasını yönetebilir.
+- Giriş e-postası hiçbir zaman otomatik olarak kamuya açık iletişim e-postası yapılmaz.
+- Belediye / üniversite editörleri için kurumsal iletişim e-postası alanı vardır.
+- Yönetim paneli sekmeli ve mobil uyumlu hale getirilmiştir.
+
+SUPABASE
+1. Önce mevcut migration'ların tamamının kurulu olduğundan emin olun.
+2. SQL Editor'da şu dosyayı çalıştırın:
+   supabase/migrations/010_topluluk_sayfalari_ve_paylasimlar.sql
+3. Edge Function'ları yeniden deploy edin:
+   supabase functions deploy content-admin
+   supabase functions deploy role-admin
+4. ALLOWED_ORIGINS değerini canlı sitenin origin'i ile sınırlandırın.
+
+GÜVENLİK
+- Topluluk gönderi yazma yetkisi RLS ile kontrol edilir.
+- Storage yükleme yetkisi topluluk bazında kontrol edilir.
+- Görsel sınırı 5 MB; JPEG, PNG ve WEBP.
+- Kamuya açık API görünümü auth kullanıcı UUID'sini ve giriş e-postasını döndürmez.
+- Ayrıntılı kontrol: docs/GUVENLIK-v13.md

@@ -44,6 +44,9 @@ NevGenc.map = (() => {
   function escape(s=''){
     return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
   }
+  function safeUrl(value){
+    try{const u=new URL(String(value||''),location.origin);return /^https:$/.test(u.protocol)?u.href:'#'}catch{return '#'}
+  }
   function validPoint(x){
     return Number.isFinite(Number(x?.lat)) && Number.isFinite(Number(x?.lng));
   }
@@ -54,7 +57,7 @@ NevGenc.map = (() => {
     return `<div class="map-popup"><h3>${escape(x.name)}</h3><p>${escape(x.address||x.category||'')}</p>${x.phone?`<p>${escape(x.phone)}</p>`:''}<div class="map-popup-links">${serviceLink}<a href="${maps}" target="_blank" rel="noopener">Yol tarifi ↗</a></div></div>`;
   }
   function stopPopupHtml(name,sourceUrl,lineCode=''){
-    return `<div class="map-popup"><h3>${escape(name)}</h3><p>${lineCode?`Hat ${escape(lineCode)} üzerinde doğrulanmış durak konumu`:'Doğrulanmış belediye otobüs durağı'}</p>${sourceUrl?`<a href="${escape(sourceUrl)}" target="_blank" rel="noopener">Konum kaynağını aç ↗</a>`:''}</div>`;
+    return `<div class="map-popup"><h3>${escape(name)}</h3><p>${lineCode?`Hat ${escape(lineCode)} üzerinde doğrulanmış durak konumu`:'Doğrulanmış belediye otobüs durağı'}</p>${sourceUrl?`<a href="${safeUrl(sourceUrl)}" target="_blank" rel="noopener">Konum kaynağını aç ↗</a>`:''}</div>`;
   }
 
   function cache(){try{return JSON.parse(localStorage.getItem(NevGenc.config.map.geocodeCacheKey)||'{}')}catch{return {}}}

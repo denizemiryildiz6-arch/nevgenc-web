@@ -1,1 +1,126 @@
-<!doctype html><meta charset="utf-8"><script>location.replace('./#/'+(location.pathname.split('/').filter(Boolean).pop()||'anasayfa'))</script>
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Serdivan NevGenç — Sakarya'daki öğrenciler için etkinlikler, topluluklar, fırsatlar, kampüs hizmetleri ve şehir haritası.">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-src 'none'; upgrade-insecure-requests">
+  <title>Serdivan NevGenç</title>
+  <link rel="icon" href="assets/img/nevgenc-logo.png">
+  <link rel="preconnect" href="https://unpkg.com" crossorigin>
+  <link rel="preconnect" href="https://tile.openstreetmap.org" crossorigin>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <link rel="stylesheet" href="assets/css/app.css?v=13.0.0">
+</head>
+<body>
+  <div id="app-shell" class="app-shell">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="brand" href="#/etkinlikler" aria-label="Serdivan NevGenç Etkinlikler">
+          <img src="assets/img/nevgenc-logo.png" alt="NevGenç logosu">
+          <span class="brand-copy"><small>Serdivan</small><strong>NevGenç</strong></span>
+        </a>
+        <div class="topbar-actions">
+          <button class="top-icon" type="button" id="global-search-button" aria-label="Ara">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+          </button>
+          <button class="profile-button" type="button" id="profile-button" aria-label="Profil">
+            <span id="profile-button-avatar">?</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main id="view" class="view" tabindex="-1" aria-live="polite"></main>
+
+    <nav class="bottom-nav" aria-label="Ana navigasyon">
+      <a class="nav-item" href="#/etkinlikler" data-route="etkinlikler">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18"/><path d="M7 14h3M14 14h3M7 18h3"/></svg>
+        <span>Etkinlikler</span>
+      </a>
+      <a class="nav-item" href="#/topluluklar" data-route="topluluklar">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20c.4-4.1 2.4-6.2 5.5-6.2s5.1 2.1 5.5 6.2"/><circle cx="17.2" cy="9" r="2.4"/><path d="M16.3 14.6c2.8.2 4.3 2 4.6 5.4"/></svg>
+        <span>Topluluklar</span>
+      </a>
+      <a class="nav-item" href="#/kesfet" data-route="kesfet">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2.1 4.9-4.9 2.1 2.1-4.9 4.9-2.1Z"/></svg>
+        <span>Keşfet</span>
+      </a>
+      <a class="nav-item" href="#/firsatlar" data-route="firsatlar">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2.2"/><path d="M8 7V5.5A2.5 2.5 0 0 1 10.5 3h3A2.5 2.5 0 0 1 16 5.5V7"/><path d="M3 12h18"/></svg>
+        <span>Fırsatlar</span>
+      </a>
+      <a class="nav-item" href="#/harita" data-route="harita">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z"/><circle cx="12" cy="10" r="2"/></svg>
+        <span>Harita</span>
+      </a>
+    </nav>
+  </div>
+
+  <div class="search-overlay modal-overlay" id="search-overlay" hidden>
+    <div class="search-dialog modal-dialog" role="dialog" aria-modal="true" aria-labelledby="search-title">
+      <div class="modal-head"><div><span class="kicker">NEVGENÇ</span><h2 id="search-title">Ara</h2></div><button class="close-button" type="button" id="search-close" aria-label="Kapat">×</button></div>
+      <label class="search-input-wrap"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg><input id="global-search-input" type="search" placeholder="Topluluk, işletme, fırsat veya duyuru ara…" autocomplete="off" maxlength="100"></label>
+      <div id="global-search-results" class="search-results"></div>
+    </div>
+  </div>
+
+  <div class="auth-overlay modal-overlay" id="auth-overlay" hidden>
+    <div class="auth-dialog modal-dialog" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+      <button class="close-button auth-close" type="button" id="auth-close" aria-label="Kapat">×</button>
+      <div class="auth-brand"><img src="assets/img/nevgenc-logo.png" alt=""><div><small>Serdivan</small><strong>NevGenç</strong></div></div>
+      <div class="auth-tabs" role="tablist"><button class="auth-tab active" type="button" data-auth-tab="signin">Giriş yap</button><button class="auth-tab" type="button" data-auth-tab="signup">Hesap oluştur</button></div>
+      <div class="auth-panel" data-auth-panel="signin">
+        <span class="kicker">ÖĞRENCİ HESABI</span><h2 id="auth-title">Tekrar hoş geldin</h2><p>Öğrenci e-posta adresin ve parolanla giriş yap.</p>
+        <form id="signin-form" novalidate>
+          <label><span>E-posta</span><input id="signin-email" name="email" type="email" autocomplete="email" maxlength="160" required></label>
+          <label><span>Parola</span><input id="signin-password" name="password" type="password" autocomplete="current-password" minlength="10" maxlength="128" required></label>
+          <div class="form-error" id="signin-error" aria-live="polite"></div>
+          <button class="button primary wide" type="submit">Giriş yap</button>
+          <button class="text-button" type="button" id="forgot-password">Parolamı unuttum</button>
+        </form>
+      </div>
+      <div class="auth-panel" data-auth-panel="signup" hidden>
+        <span class="kicker">YENİ HESAP</span><h2>Öğrenci hesabını oluştur</h2><p>Kayıt yalnızca doğrulanabilen öğrenci e-posta adresleriyle açılır. E-posta doğrulaması zorunludur.</p>
+        <form id="signup-form" novalidate>
+          <label><span>Ad Soyad</span><input id="signup-name" name="name" type="text" autocomplete="name" maxlength="80" required></label>
+          <label><span>Öğrenci e-postası</span><input id="signup-email" name="email" type="email" autocomplete="email" maxlength="160" placeholder="ogrenci@ogr.sakarya.edu.tr" required></label>
+          <label><span>Parola</span><input id="signup-password" name="password" type="password" autocomplete="new-password" minlength="10" maxlength="128" required></label>
+          <label><span>Parola tekrar</span><input id="signup-password-confirm" name="passwordConfirm" type="password" autocomplete="new-password" minlength="10" maxlength="128" required></label>
+          <div class="password-help">En az 10 karakter; büyük/küçük harf ve rakam kullan.</div>
+          <div class="form-error" id="signup-error" aria-live="polite"></div>
+          <button class="button primary wide" type="submit">Hesap oluştur</button>
+        </form>
+      </div>
+      <div class="auth-panel" data-auth-panel="recovery" hidden>
+        <span class="kicker">HESAP GÜVENLİĞİ</span><h2>Yeni parola belirle</h2><p>Yeni parolanı yalnızca bu cihazda açık olan güvenli kurtarma oturumunda değiştirebilirsin.</p>
+        <form id="recovery-form" novalidate>
+          <label><span>Yeni parola</span><input id="recovery-password" type="password" autocomplete="new-password" minlength="10" maxlength="128" required></label>
+          <label><span>Yeni parola tekrar</span><input id="recovery-password-confirm" type="password" autocomplete="new-password" minlength="10" maxlength="128" required></label>
+          <div class="password-help">En az 10 karakter; büyük/küçük harf ve rakam kullan.</div>
+          <div class="form-error" id="recovery-error" aria-live="polite"></div>
+          <button class="button primary wide" type="submit">Parolayı güncelle</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2.56.1/dist/umd/supabase.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="assets/js/config.js?v=13.0.0"></script>
+  <script src="assets/js/data/official-data.js"></script>
+  <script src="assets/js/data/announcements.js"></script>
+  <script src="assets/js/data/opportunities.js"></script>
+  <script src="assets/js/data/seed.js"></script>
+  <script src="assets/js/services/supabase.js"></script>
+  <script src="assets/js/services/session.js"></script>
+  <script src="assets/js/services/repositories.js"></script>
+  <script src="assets/js/map.js?v=13.0.0"></script>
+  <script src="assets/js/views.js?v=13.0.0"></script>
+  <script src="assets/js/app.js?v=13.0.0"></script>
+</body>
+</html>

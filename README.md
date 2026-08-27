@@ -407,3 +407,46 @@ Uygulama arayüzü hash tabanlı yönlendirme kullanır:
 ```
 
 Bu yöntem, statik GitHub Pages yayınında sunucu tarafı yönlendirme ihtiyacını ortadan kaldırır ve doğrudan dağıtımı kolaylaştırır.
+
+## v13 — Topluluk sayfaları ve yönetim paneli
+
+Bu sürümde topluluk yapısı gerçek kullanım için genişletildi.
+
+- Topluluk kartına tıklanınca `#/topluluk/<slug>` adresinde topluluk sayfası açılır.
+- Topluluk sayfasında yöneticiler en üstte gösterilir.
+- Yönetici giriş e-postası hiçbir zaman otomatik olarak yayımlanmaz. Yönetici isterse yönetim panelinden ayrı bir kamuya açık iletişim e-postası girer.
+- Topluluğun ayrıca isteğe bağlı bir ortak iletişim e-postası olabilir.
+- Telefon numarası veya kişisel mesajlaşma hesabı topluluk iletişim alanında gösterilmez.
+- Topluluk gönderileri en yeniden eskiye sıralanır.
+- Topluluk yöneticileri metin, görsel veya metin + görsel gönderisi yayımlayabilir.
+- Gönderi görselleri `community-posts` Supabase Storage bucket'ına yüklenir. Maksimum boyut 5 MB, izin verilen türler JPEG / PNG / WEBP'tir.
+- Yükleme yetkisi ve gönderi yazma yetkisi yalnızca arayüzde değil, Supabase RLS tarafından da topluluk bazında doğrulanır.
+- Topluluk başına maksimum 4 yönetici kuralı korunur.
+- Belediye / üniversite editörleri için isteğe bağlı kurumsal iletişim e-postası alanı eklenmiştir.
+
+### v13 veritabanı kurulumu
+
+Önce önceki migration'ları sırasıyla çalıştırın. Ardından:
+
+```text
+supabase/migrations/010_topluluk_sayfalari_ve_paylasimlar.sql
+```
+
+çalıştırılmalıdır.
+
+Migration otomatik olarak `community-posts` Storage bucket'ını ve gerekli Storage RLS politikalarını oluşturur.
+
+### Edge Function güncellemesi
+
+`content-admin` fonksiyonu v13 ile güncellenmiştir. Mevcut Supabase projesinde yeniden deploy edilmelidir:
+
+```bash
+supabase functions deploy content-admin
+supabase functions deploy role-admin
+```
+
+`SUPABASE_SERVICE_ROLE_KEY` yalnızca Edge Function secret'ı olarak tutulmalıdır. Frontend'e, GitHub Pages dosyalarına veya `config.js` içine eklenmemelidir.
+
+### İletişim güvenliği
+
+NevGenç'te kamuya açık iletişim adresi ile hesap giriş adresi birbirinden ayrıdır. `auth.users.email` veya `profiles.email_lower` public sayfalarda kullanılmaz. Public topluluk yönetici görünümü kullanıcı UUID'sini veya giriş e-postasını da döndürmez.
