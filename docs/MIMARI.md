@@ -1,87 +1,140 @@
 # NevGenç Teknik Mimarisi
 
-## Genel yapı
+## 1. Genel yapı
 
-NevGenç, mobil öncelikli ve statik olarak yayınlanabilen bir web uygulaması olarak tasarlanmıştır. Kullanıcı arayüzü HTML, CSS ve Vanilla JavaScript ile çalışır; veri ve kimlik doğrulama katmanı Supabase üzerinden sağlanır.
+NevGenç mobil öncelikli statik web istemcisi ile Supabase servislerinden oluşur.
 
-## Ana ekranlar
+```text
+Tarayıcı / Serdivan Cepte WebView
+        |
+        v
+HTML + CSS + Vanilla JS
+        |
+        +--> Repository katmanı
+        |       |
+        |       +--> Supabase PostgreSQL + RLS
+        |       +--> doğrulanmış yerel fallback veri
+        |
+        +--> Supabase Auth / hedef SSO
+        +--> Supabase Storage
+        +--> Edge Functions
+        +--> Leaflet + OpenStreetMap
+```
 
-- Ana Sayfa
+## 2. Ana navigasyon
+
+- Etkinlikler
 - Topluluklar
-- Harita
+- Nev+
 - Fırsatlar
-- Profil
+- Harita
 
-Uygulama hash tabanlı istemci yönlendirmesi kullanır. Böylece GitHub Pages gibi statik barındırma servislerinde ilave sunucu yapılandırmasına ihtiyaç duyulmaz.
+Profil ve yönetim paneli üst kullanıcı alanından açılır.
 
-## Veri erişim katmanı
+Eski `#/kesfet` rotası geriye uyumluluk için Nev+ ekranına yönlendirilir.
 
-`assets/js/services/repositories.js`, ekranların doğrudan Supabase sorgusu yazmasını engelleyen ortak veri erişim katmanıdır.
+## 3. Nev+
 
-İşleyiş:
+Nev+ günlük servislerin ana modül katmanıdır. Modüllerin rotaları birbirinden bağımsız tutulur; böylece ileride her servis kendi veri kaynağına bağlanabilir.
 
-1. Supabase yapılandırılmışsa ilgili tablo okunur.
-2. Supabase bağlantısı yoksa projeye eklenmiş doğrulanmış açık veri seti kullanılır.
-3. Veri ekranlara ortak bir biçimde aktarılır.
+Aktif:
 
-Bu yapı, arayüz ile veri kaynağının birbirinden ayrılmasını sağlar.
+- Oyun Odası
+- Topluluk Haberleri
+- Yemek Menüsü
+- İş İlanları
+- Kütüphane
+- Öğrenci Dostu İşletmeler
+- Serdivan Sosyal Tesisleri
 
-## Doğrulanmış açık veri
+Hazırlık:
 
-`assets/js/data/official-data.js` dosyası, resmî veya doğrulanmış kaynaklardan derlenen başlangıç verilerini içerir.
+- Kampüs Pazarı
+- gerçek zamanlı kütüphane doluluk verisi
+- doğrulanmış ürün/menü fiyat karşılaştırması
 
-Bu dosyada kaynak adresi ve doğrulama tarihi tutulan alanlar bulunmaktadır.
+## 4. Veri erişim katmanı
 
-## Harita
+`assets/js/services/repositories.js` ekranların doğrudan tablo ayrıntılarına bağlanmasını engeller.
 
-Harita altyapısı Leaflet.js ve OpenStreetMap kullanır.
+Öncelik:
 
-Desteklenen konum türleri:
+1. Supabase canlı veri
+2. doğrulanmış yerel fallback
+3. veri yoksa boş/çok yakında durumu
 
-- campus
-- library
-- dining
-- partner
-- stop
-- other
+Yeni belediye tesisleri `municipal_facilities` tablosunda tutulur.
 
-Toplu koordinat çözümleme tarayıcı üzerinden yapılmaz. Kampüs, kütüphane, yemekhane ve mevcut anlaşmalı işletmelerin doğrulanmış koordinatları yerel açık veri katmanında ve Supabase migration dosyasında sabitlenmiştir. Supabase'de eski bir kaydın koordinatı boş olsa bile repository katmanı doğrulanmış yerel koordinatı yedek olarak kullanır.
+## 5. Kimlik ve SSO
 
-## Ulaşım
+Mevcut test akışı Supabase Auth e-posta/parola doğrulamasıdır.
 
-Ulaşım verisi üç ana tabloyla modellenmiştir:
+Hedef üretim akışı Serdivan Cepte oturumunu NevGenç’e taşıyan SSO’dur. OAuth/OIDC destekleniyorsa doğrudan kurumsal identity provider tercih edilir. Alternatif olarak kısa ömürlü tek kullanımlık authorization code kullanılmalıdır.
 
-- `transport_lines`
-- `transport_stops`
-- `transport_line_stops`
+E-posta veya uzun ömürlü erişim tokenı URL query parametresinde taşınmaz.
 
-`transport_line_stops`, bir hattaki durakların sırasını ve yönünü saklar.
+## 6. Yetkilendirme
 
-`transport_lines.route_geojson` alanı, doğrulanmış güzergâh geometrisinin haritada çizilmesi için ayrılmıştır.
+Global rol bilgisi ile kaynak ilişkisi ayrıdır.
 
-## Kimlik doğrulama
+- Normal kullanıcı
+- Topluluk yöneticisi → `community_admins`
+- Kurum editörü → `organization_editors`
+- Platform yöneticisi → `platform_admins`
 
-Kullanıcı deneyiminin ilk aşamasında `session.js` üzerinden ad tabanlı, parolasız bir yerel oturum kullanılır. Bu oturum yalnızca kişiselleştirme amaçlıdır. Mimari, gerektiğinde Supabase Auth ile doğrulanmış hesaba geçilebilecek şekilde korunmuştur.
+Her toplulukta en fazla 4 yönetici, platformda en fazla 4 platform yöneticisi bulunur.
 
-Supabase Auth etkinleştirildiğinde kullanıcı hesabı ile `profiles` tablosu aynı UUID üzerinden ilişkilendirilir. Geçici ad oturumu bu ilişki yerine geçmez.
+Kritik işlemler `content-admin` ve `role-admin` Edge Functions üzerinden yürütülür. RLS veritabanı seviyesinde ikinci güvenlik katmanıdır.
 
-`service_role` anahtarı frontend tarafında kullanılmaz.
+## 7. Topluluk içerikleri
 
-## Güvenlik
+Topluluk yöneticileri:
 
-Row Level Security (RLS) temel erişim politikaları `supabase/migrations/001_core.sql` içinde tanımlanmıştır.
+- metin
+- görsel
+- metin + görsel
 
-Canlı kullanıma geçmeden önce kurumun kullanıcı rolleri ve yönetim süreçlerine göre politikaların tekrar gözden geçirilmesi önerilir.
+paylaşabilir.
 
-## Duyuru ve etkileşim katmanı
+Kamuya açık görünüm `community_posts_public` ve `community_admins_public` görünümleri üzerinden, hassas kimlik alanları dışarı çıkarılmadan sağlanır.
 
-NevGenç'in ana kullanım akışı duyuru merkezidir. `announcements` tablosu üniversite, belediye, topluluk ve NevGenç kaynaklı içerikleri ortak bir veri modelinde tutar.
+Topluluk haberleri Nev+ içinde tüm topluluk gönderilerini kronolojik olarak birleştirir.
 
-Kullanıcı etkileşimleri iki ayrı tabloda saklanır:
+## 8. Harita
 
-- `community_follows`: kullanıcının takip ettiği topluluklar
-- `announcement_responses`: kullanıcının bir duyuru/etkinlik için `interested` veya `attending` tercihi
+Leaflet + OpenStreetMap kullanılır.
 
-Ana sayfadaki "Takip Ettiklerim" filtresi, bu iki katmanın topluluk ilişkisini kullanacak şekilde hazırlanmıştır. Mevcut ad tabanlı oturumda tercihler yerel depolamada saklanır. Doğrulanmış Supabase Auth oturumu devreye alındığında Supabase verisi esas alınabilir.
+Mevcut katmanlar:
 
-Harita ulaşım katmanında hat ve durak sırası resmî veri kaynağıyla gösterilir. Başlangıç veri setinde koordinatı ayrıca doğrulanmış bazı kampüs/Serdivan durakları doğrudan haritada işaretlenir. Bir hat seçildiğinde bu doğrulanmış noktalar ilgili hat üzerinde görünür, hattın tüm durakları panelde resmî sırasıyla listelenir. Tam güzergâh geometrisi (`route_geojson`) belediye veri kaynağından sağlandığında mevcut harita kodu rotayı otomatik olarak çizer. Koordinatı bulunmayan duraklara tahmini nokta verilmez.
+- kampüs
+- kütüphane
+- yemekhane
+- anlaşmalı işletme
+- otobüs durakları / hatları
+
+Doğrulanmamış koordinat haritaya tahmini pin olarak eklenmez.
+
+## 9. Güvenlik sınırı
+
+Frontend güvenilir yetki kaynağı değildir. Kullanıcının butonu görmemesi güvenlik kontrolü sayılmaz.
+
+Yetki kontrolleri:
+
+- Auth oturumu
+- RLS
+- Edge Function yetki kontrolü
+- Storage politikaları
+
+üzerinden uygulanır.
+
+## 10. Sürüm yönetimi
+
+Veritabanı değişiklikleri migration olarak eklenir; daha önce uygulanmış migration dosyaları mümkün olduğunca değiştirilmez.
+
+v14 ile gelen migration:
+
+```text
+011_nevplus_ve_isletme_duzeltmeleri.sql
+```
+
+Bu migration British Town işletme adını düzeltir ve `municipal_facilities` veri modelini ekler.

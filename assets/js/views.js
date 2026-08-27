@@ -17,7 +17,13 @@ NevGenc.views = (() => {
     settings:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.4-2.4 1a7 7 0 0 0-1.7-1L14.5 3h-5l-.4 3.1a7 7 0 0 0-1.7 1L5 6.1 3 9.5 5 11a7 7 0 0 0 0 2l-2 1.5L5 18l2.4-1a7 7 0 0 0 1.7 1l.4 3h5l.4-3a7 7 0 0 0 1.7-1l2.4 1 2-3.5-2-1.5a7 7 0 0 0 .1-1Z"/></svg>',
     mail:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg>',
     image:'<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m4 17 5-5 4 4 2-2 5 5"/></svg>',
-    plus:'<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>'
+    plus:'<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
+    game:'<svg viewBox="0 0 24 24"><path d="M8 8h8a5 5 0 0 1 4.8 6.5l-1 3A2 2 0 0 1 17 18.7l-2.7-2.2H9.7L7 18.7a2 2 0 0 1-2.8-1.2l-1-3A5 5 0 0 1 8 8Z"/><path d="M7 12h4M9 10v4M16 11.5h.01M18 13.5h.01"/></svg>',
+    news:'<svg viewBox="0 0 24 24"><path d="M5 4h12a2 2 0 0 1 2 2v14H6a3 3 0 0 1-3-3V6a2 2 0 0 1 2-2Z"/><path d="M7 8h8M7 12h8M7 16h5"/></svg>',
+    market:'<svg viewBox="0 0 24 24"><path d="M4 10h16M5 10l1-5h12l1 5M6 10v9h12v-9"/><path d="M9 14h6"/></svg>',
+    wallet:'<svg viewBox="0 0 24 24"><path d="M4 6h14a2 2 0 0 1 2 2v10H6a2 2 0 0 1-2-2V6Z"/><path d="M4 8V5a2 2 0 0 1 2-2h10"/><path d="M15 12h5v4h-5a2 2 0 0 1 0-4Z"/></svg>',
+    facility:'<svg viewBox="0 0 24 24"><path d="M4 20h16M6 20V9l6-4 6 4v11M9 12h2M13 12h2M9 16h2M13 16h2"/></svg>',
+    spark:'<svg viewBox="0 0 24 24"><path d="m12 3 1.4 4.1L17.5 8.5l-4.1 1.4L12 14l-1.4-4.1-4.1-1.4 4.1-1.4L12 3Z"/><path d="m18 14 .8 2.2 2.2.8-2.2.8L18 20l-.8-2.2L15 17l2.2-.8L18 14Z"/></svg>'
   };
   const fmtDate=v=>{if(!v)return '';try{return new Intl.DateTimeFormat('tr-TR',{day:'numeric',month:'long',year:'numeric'}).format(new Date(v))}catch{return ''}};
   const fmtShort=v=>{if(!v)return '';try{return new Intl.DateTimeFormat('tr-TR',{day:'numeric',month:'short'}).format(new Date(v))}catch{return ''}};
@@ -51,9 +57,9 @@ NevGenc.views = (() => {
     const popular=[...communities.data].sort((a,b)=>(counts[b.slug]||0)-(counts[a.slug]||0)||a.name.localeCompare(b.name,'tr')).slice(0,6);
     const followedFeed=ann.data.filter(a=>a.communitySlug&&followed.has(a.communitySlug)).slice(0,4);
     const latest=ann.data.filter(a=>!followedFeed.includes(a)).slice(0,5);
-    return `<section class="page dashboard-page"><div class="section-title"><div><span class="kicker">GÜNCEL</span><h1>Yaklaşan Etkinlikler</h1></div><a href="#/kesfet">Tümünü Gör <span>›</span></a></div><div class="featured-events">${events.map((a,i)=>featuredEvent(a,responses,followed,i)).join('')||'<div class="empty-panel">Doğrulanmış yaklaşan etkinlik kaydı bekleniyor.</div>'}</div>
+    return `<section class="page dashboard-page"><div class="section-title"><div><span class="kicker">GÜNCEL</span><h1>Yaklaşan Etkinlikler</h1></div><a href="#/etkinlikler">Tümünü Gör <span>›</span></a></div><div class="featured-events">${events.map((a,i)=>featuredEvent(a,responses,followed,i)).join('')||'<div class="empty-panel">Doğrulanmış yaklaşan etkinlik kaydı bekleniyor.</div>'}</div>
       <div class="section-title compact"><div><h2>Topluluklar</h2><p>NevGenç’te takip ettiklerin zamanla burada öne çıkar.</p></div><a href="#/topluluklar">Tümünü Gör <span>›</span></a></div><div class="community-rail">${popular.map(c=>communityCard(c,followed,counts)).join('')}</div>
-      <div class="section-title compact"><div><h2>Takip Ettiklerin</h2><p>Takip ettiğin toplulukların paylaşımları.</p></div><a href="#/kesfet">Akışı aç <span>›</span></a></div>${followedFeed.length?`<div class="feed-list">${followedFeed.map(a=>feedCard(a,followed,responses)).join('')}</div>`:`<div class="follow-empty"><div><strong>Takip akışın henüz boş.</strong><p>İlgilendiğin toplulukları takip ettiğinde yeni paylaşımlarını burada göreceksin.</p></div><a class="button" href="#/topluluklar">Toplulukları keşfet</a></div>`}
+      <div class="section-title compact"><div><h2>Takip Ettiklerin</h2><p>Takip ettiğin toplulukların paylaşımları.</p></div><a href="#/topluluk-haberleri">Akışı aç <span>›</span></a></div>${followedFeed.length?`<div class="feed-list">${followedFeed.map(a=>feedCard(a,followed,responses)).join('')}</div>`:`<div class="follow-empty"><div><strong>Takip akışın henüz boş.</strong><p>İlgilendiğin toplulukları takip ettiğinde yeni paylaşımlarını burada göreceksin.</p></div><a class="button" href="#/topluluklar">Toplulukları keşfet</a></div>`}
       <div class="section-title compact"><div><h2>Güncel Duyurular</h2><p>Üniversite, belediye ve topluluklardan doğrulanmış içerikler.</p></div>${sourceBadge(ann.source)}</div><div class="feed-list">${latest.map(a=>feedCard(a,followed,responses)).join('')}</div></section>`;
   }
 
@@ -90,9 +96,47 @@ NevGenc.views = (() => {
     </section>`;
   }
 
-  async function discover(){
-    const [ann,followed,responses]=await Promise.all([NevGenc.repositories.announcements(),NevGenc.repositories.followedCommunitySlugs(),NevGenc.repositories.announcementResponses()]);
-    return `<section class="page discover-page"><div class="page-heading"><span class="kicker">TEK AKIŞ</span><h1>Keşfet</h1><p>Topluluk paylaşımları, üniversite duyuruları ve belediye haberleri kronolojik bir akışta.</p></div><div class="discover-filters" id="announcement-filters"><button class="category-chip active" data-announcement-filter="all">Tümü</button><button class="category-chip" data-announcement-filter="community">Topluluklar</button><button class="category-chip" data-announcement-filter="university">Üniversite</button><button class="category-chip" data-announcement-filter="municipality">Belediye</button><button class="category-chip" data-announcement-filter="following">Takip Ettiklerim</button></div><div id="announcement-feed" class="social-feed">${ann.data.map(a=>feedCard(a,followed,responses)).join('')}</div></section>`;
+  function nevPlusIcon(name){return icon[name]||icon.spark;}
+  function nevPlusModuleCard(m){
+    const coming=m.status==='soon';
+    return `<a class="nevplus-module ${coming?'is-soon':''}" href="${e(m.href)}"><span class="nevplus-module-icon">${nevPlusIcon(m.icon)}</span><div><strong>${e(m.title)}</strong><p>${e(m.description)}</p></div><span class="nevplus-module-meta">${coming?'Çok yakında':'Aç'} <b>›</b></span></a>`;
+  }
+  async function nevPlus(){
+    const data=NevGenc.nevPlusData||{modules:[],facilities:[]};
+    return `<section class="page nevplus-page"><div class="nevplus-hero"><div><span class="kicker">NEV+</span><h1>Öğrenci hayatı için kısa yollar</h1><p>Kampüs araçları, topluluk haberleri, günlük ihtiyaçlar ve Serdivan hizmetleri tek ekranda.</p></div><span class="nevplus-orb">N<span>+</span></span></div><div class="nevplus-grid">${data.modules.map(nevPlusModuleCard).join('')}</div><div class="nevplus-note"><span>${icon.spark}</span><div><strong>Nev+ kademeli olarak büyüyor.</strong><p>Hazır olmayan servisler gerçek veri ve güvenlik kontrolleri tamamlandığında açılır; sahte veri gösterilmez.</p></div></div></section>`;
+  }
+
+  function communityNewsPostCard(post){
+    return `<article class="community-news-post"><header><a href="#/topluluk/${e(post.communitySlug)}"><span class="institution-mark community">${e(initials(post.communityName))}</span><div><strong>${e(post.communityName)}</strong><small>${e(post.communityCategory||'Öğrenci Topluluğu')} · ${e(fmtDate(post.publishedAt))}</small></div></a></header>${post.body?`<p>${e(post.body)}</p>`:''}${post.imageUrl?`<img src="${safeUrl(post.imageUrl)}" alt="${e(post.communityName)} paylaşımı" loading="lazy">`:''}<footer><a href="#/topluluk/${e(post.communitySlug)}">Topluluğa git <span>›</span></a></footer></article>`;
+  }
+  async function communityNews(){
+    const [posts,ann,followed,responses]=await Promise.all([NevGenc.repositories.communityPostsFeed(),NevGenc.repositories.announcements(),NevGenc.repositories.followedCommunitySlugs(),NevGenc.repositories.announcementResponses()]);
+    const communityAnnouncements=ann.data.filter(a=>a.sourceType==='community').slice(0,40);
+    return `<section class="page community-news-page"><a class="back-link" href="#/nevplus">‹ Nev+</a><div class="page-heading"><span class="kicker">TOPLULUK HABERLERİ</span><h1>Kampüste neler oluyor?</h1><p>Topluluk yöneticilerinin NevGenç üzerinden yaptığı paylaşımlar ve topluluk duyuruları en yeni içerikten başlayarak burada görünür.</p></div>${posts.data.length?`<div class="community-news-feed">${posts.data.map(communityNewsPostCard).join('')}</div>`:`<div class="empty-panel">Topluluk yöneticilerinin NevGenç gönderileri burada görünecek.</div>`}${communityAnnouncements.length?`<div class="section-title compact"><div><h2>Topluluk duyuruları</h2><p>Etkinlik ve resmî duyuru akışından.</p></div></div><div class="feed-list">${communityAnnouncements.map(a=>feedCard(a,followed,responses)).join('')}</div>`:''}</section>`;
+  }
+
+  function directionsUrl(address){return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address||'Serdivan Sakarya')}`;}
+  async function socialFacilities(){
+    const result=await NevGenc.repositories.municipalFacilities();
+    const items=result.data||[],facilities=items.filter(x=>!String(x.facilityType||'').toLocaleLowerCase('tr').includes('kütüphane')),libraries=items.filter(x=>String(x.facilityType||'').toLocaleLowerCase('tr').includes('kütüphane'));
+    const card=x=>`<article class="facility-card"><span>${icon.facility}</span><div><small>${e(x.facilityType||'Tesis')}</small><h3>${e(x.name)}</h3><p>${e(x.address||'Serdivan / Sakarya')}</p><div>${x.sourceUrl?`<a href="${safeUrl(x.sourceUrl)}" target="_blank" rel="noopener noreferrer">Resmî kaynak ↗</a>`:''}<a href="${safeUrl(directionsUrl(x.address))}" target="_blank" rel="noopener noreferrer">Yol tarifi ↗</a></div></div></article>`;
+    const verified=items.map(x=>x.verifiedAt).filter(Boolean).sort().at(-1)||NevGenc.nevPlusData?.verifiedAt;
+    return `<section class="page facilities-page"><a class="back-link" href="#/nevplus">‹ Nev+</a><div class="page-heading"><span class="kicker">SERDİVAN</span><h1>Sosyal Tesisler</h1><p>Serdivan Belediyesi’nin resmî kaynaklarında yayımlanan sosyal tesis ve kütüphaneler.</p></div><div class="facility-grid">${facilities.map(card).join('')||'<div class="empty-panel">Tesis verisi bekleniyor.</div>'}</div><div class="section-title compact"><div><h2>Kütüphaneler</h2><p>Belediye kaynaklarında yer alan çalışma ve kültür noktaları.</p></div></div><div class="facility-grid">${libraries.map(card).join('')||'<div class="empty-panel">Kütüphane verisi bekleniyor.</div>'}</div><p class="data-footnote">Veri kaynağı: ${result.source==='supabase'?'Supabase / resmî kaynak kayıtları':'yerel doğrulanmış kaynak'}${verified?` · son doğrulama ${e(fmtDate(verified))}`:''}. Çalışma saatleri doğrulanmadan sabit bilgi olarak gösterilmez.</p></section>`;
+  }
+
+  async function studentFriendly(){
+    const partners=await NevGenc.repositories.partners();
+    return `<section class="page student-friendly-page"><a class="back-link" href="#/nevplus">‹ Nev+</a><div class="page-heading"><span class="kicker">ÖĞRENCİ DOSTU</span><h1>En Ucuz Nerede Yerim?</h1><p>Bu bölüm fiyat karşılaştırmasına hazırlanıyor. Şimdilik doğrulanmış NevGenç anlaşmalı işletmeler gösteriliyor; fiyatı doğrulanmayan işletmeye “en ucuz” etiketi verilmez.</p></div><div class="price-status"><span>${icon.wallet}</span><div><strong>Fiyat karşılaştırması hazırlanıyor</strong><p>İşletmelerden güncel menü/fiyat verisi geldikçe ürün bazında karşılaştırma açılacak.</p></div><span class="soon-badge">Çok yakında</span></div><div class="section-title compact"><div><h2>Anlaşmalı işletmeler</h2><p>Doğrulanmış mevcut liste.</p></div></div><div class="student-partner-grid">${partners.data.map(p=>`<article><span class="partner-monogram">${e(initials(p.name))}</span><div><h3>${e(p.name)}</h3><small>${e(p.category||'Anlaşmalı işletme')}</small><p>${e(p.address||'')}</p>${p.benefitText?`<b>${e(p.benefitText)}</b>`:''}</div>${p.websiteUrl||p.sourceUrl?`<a href="${safeUrl(p.websiteUrl||p.sourceUrl)}" target="_blank" rel="noopener noreferrer">Detay ↗</a>`:''}</article>`).join('')}</div></section>`;
+  }
+
+  function sudokuGridHtml(){return Array.from({length:81},(_,i)=>`<input class="sudoku-cell" inputmode="numeric" pattern="[1-9]" maxlength="1" data-sudoku-cell="${i}" aria-label="Sudoku hücresi ${i+1}">`).join('');}
+  async function gameRoom(){
+    return `<section class="page game-room-page"><a class="back-link" href="#/nevplus">‹ Nev+</a><div class="page-heading"><span class="kicker">OYUN ODASI</span><h1>Kısa bir mola</h1><p>Oyunlar cihaz üzerinde çalışır; skor için kişisel veri toplanmaz.</p></div><div class="game-layout"><article class="game-card sudoku-card"><div class="game-title"><div><span class="kicker">SUDOKU</span><h2>Günün bulmacası</h2></div><span>${icon.game}</span></div><div class="sudoku-grid" id="sudoku-grid">${sudokuGridHtml()}</div><div class="game-actions"><button class="button primary" id="sudoku-new">Yeni oyun</button><button class="button" id="sudoku-check">Kontrol et</button></div><p id="sudoku-status" class="game-status">Yeni oyun oluşturuluyor…</p></article><article class="game-card balloon-card"><div class="game-title"><div><span class="kicker">HIZLI OYUN</span><h2>Balon Patlat</h2></div><span>${icon.spark}</span></div><div class="balloon-stage" id="balloon-stage"><button class="balloon" id="balloon" aria-label="Balonu patlat"></button></div><div class="balloon-score"><span>Skor <strong id="balloon-score">0</strong></span><span>Süre <strong id="balloon-time">20</strong></span></div><button class="button primary wide" id="balloon-start">20 saniyelik oyunu başlat</button></article></div></section>`;
+  }
+
+  async function comingSoon(parts=[]){
+    const key=String(parts[0]||'').trim();const labels={'kampus-pazari':'Kampüs Pazarı'};const title=labels[key]||'Yeni Nev+ Servisi';
+    return `<section class="page coming-soon-page"><a class="back-link" href="#/nevplus">‹ Nev+</a><div class="coming-soon-card"><span>${icon.spark}</span><small>NEV+</small><h1>${e(title)}</h1><p>Bu servis gerçek kullanıcı, güvenlik ve veri gereksinimleri tamamlandıktan sonra açılacak.</p><strong>Çok yakında</strong><a class="button" href="#/nevplus">Nev+’a dön</a></div></section>`;
   }
 
   async function opportunities(){
@@ -160,5 +204,5 @@ NevGenc.views = (() => {
     </section>`;
   }
 
-  return {eventsHome,home:eventsHome,communities,communityDetail,discover,opportunities,mapView,transportDetail,libraryView,diningView,calendarView,profile,management,feedCard,communityCard};
+  return {eventsHome,home:eventsHome,communities,communityDetail,nevPlus,communityNews,socialFacilities,studentFriendly,gameRoom,comingSoon,opportunities,mapView,transportDetail,libraryView,diningView,calendarView,profile,management,feedCard,communityCard};
 })();

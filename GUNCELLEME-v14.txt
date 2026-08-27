@@ -1,0 +1,17 @@
+NevGenç v14 — Nev+ bilgi mimarisi
+
+- Alt menü: Etkinlikler / Topluluklar / Nev+ / Fırsatlar / Harita
+- Keşfet sekmesi kaldırıldı; eski rota Nev+ için geriye uyumlu alias olarak tutuldu.
+- Nev+ eklendi.
+- Kitap Okuma Kulübü modülü bulunmuyor.
+- Oyun Odası: Sudoku ve Balon Patlat eklendi.
+- Topluluk Haberleri: topluluk gönderilerini ortak kronolojik akışta gösterir.
+- Menüde Ne Var? mevcut yemek sayfasına bağlandı.
+- İş İlanları Fırsatlar bölümüne bağlandı.
+- Kampüs Pazarı güvenlik/veri modeli tamamlanana kadar Çok Yakında ekranı gösterir.
+- Kütüphane randevusu korunmuştur; canlı doluluk uydurulmaz.
+- Öğrenci Dostu / En Ucuz Nerede Yerim ekranı anlaşmalı işletmeleri gösterir; doğrulanmayan fiyat karşılaştırması yapılmaz.
+- Serdivan Sosyal Tesisleri resmî belediye kaynaklı başlangıç verileriyle eklendi.
+- British Way adı British Town Yabancı Dil Okulu Sakarya olarak düzeltildi.
+- 011_nevplus_ve_isletme_duzeltmeleri.sql migration dosyası eklendi.
+- README ve teknik mimari güncellendi.

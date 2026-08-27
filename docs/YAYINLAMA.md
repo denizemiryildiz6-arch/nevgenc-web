@@ -1,14 +1,23 @@
-# NevGenç Yayınlama Rehberi
+# NevGenç Yayınlama ve Devir Rehberi
 
-Bu belge GitHub Pages ve Supabase ile temel yayınlama adımlarını içerir.
+## 1. GitHub deposu
 
-## 1. Supabase projesi
+Repo kökünde doğrudan şu dosyalar görünmelidir:
 
-Supabase üzerinde yeni bir proje oluşturun.
+```text
+index.html
+404.html
+assets/
+supabase/
+docs/
+README.md
+```
 
-## 2. Veritabanı kurulumu
+`index.html` bir üst proje klasörünün içinde bırakılmamalıdır.
 
-Supabase SQL Editor üzerinden migration dosyalarını aşağıdaki sırayla çalıştırın:
+## 2. Supabase migration
+
+Yeni kurulumda `supabase/migrations/` klasöründeki dosyalar sıra numarasına göre uygulanır:
 
 ```text
 001_core.sql
@@ -18,96 +27,69 @@ Supabase SQL Editor üzerinden migration dosyalarını aşağıdaki sırayla ça
 004_duyuru_ve_takip.sql
 005_duyuru_baslangic_verisi.sql
 006_harita_dogrulanmis_koordinatlar.sql
+007_kutuphane_randevu_alanlari.sql
+008_guvenli_auth_roller.sql
+009_guncel_resmi_veri.sql
+010_topluluk_sayfalari_ve_paylasimlar.sql
+011_nevplus_ve_isletme_duzeltmeleri.sql
 ```
 
-Dosyalar `supabase/migrations/` klasöründedir. Daha önce kurulmuş bir veritabanında harita koordinat düzeltmesi için `006_harita_dogrulanmis_koordinatlar.sql` ayrıca çalıştırılmalıdır.
+Mevcut veritabanında daha önce uygulanan migration'lar yeniden çalıştırılmaz; yalnız yeni dosyalar uygulanır.
 
-## 3. Supabase bağlantısı
+## 3. Frontend bağlantısı
 
-Supabase Dashboard → Project Settings → API bölümünden:
+`assets/js/config.js` içine Supabase Project URL ve publishable key yazılır.
 
-- Project URL
-- Public anon key
+`service_role`, secret key, SMTP parolası veya başka bir sunucu sırrı bu dosyaya konmaz.
 
-bilgilerini alın.
-
-`assets/js/config.js` dosyasını düzenleyin:
-
-```js
-supabase: {
-  url: 'https://PROJE.supabase.co',
-  anonKey: 'PUBLIC_ANON_KEY'
-}
-```
-
-`service_role` anahtarını bu dosyaya eklemeyin.
-
-## 4. Yerel kontrol
-
-Proje klasöründe:
+## 4. Edge Functions
 
 ```bash
-python -m http.server 5500
+npx supabase@latest login
+npx supabase@latest link --project-ref PROJE_REF
+npx supabase@latest functions deploy content-admin --use-api
+npx supabase@latest functions deploy role-admin --use-api
 ```
 
-çalıştırın ve tarayıcıdan:
+Canlı site origin'i:
 
-```text
-http://localhost:5500
+```bash
+npx supabase@latest secrets set ALLOWED_ORIGINS=https://ORNEK.github.io
 ```
 
-adresini açın.
+## 5. GitHub Pages
 
-Kontrol edilmesi önerilen ekranlar:
+İki desteklenen yöntem vardır:
 
-- Ana Sayfa
-- Topluluklar
-- Harita
-- Fırsatlar
-- Profil
+### Branch yayını
 
-## 5. GitHub deposu
+`Settings → Pages → Deploy from a branch → main → /(root)`
 
-Dosyaları GitHub deposunun kök dizinine aktarın ve `main` dalına gönderin.
+### GitHub Actions
 
-## 6. GitHub Pages
+`Settings → Pages → Source: GitHub Actions`
 
-GitHub → Settings → Pages bölümünde:
+Depoda `.github/workflows/pages.yml` mevcuttur.
 
-**Source: GitHub Actions**
+## 6. Auth / SSO
 
-seçin.
+Test aşamasında Supabase Auth kullanılıyorsa `Authentication → URL Configuration` içinde Site URL ve Redirect URLs canlı adrese göre ayarlanmalıdır.
 
-Depodaki `.github/workflows/pages.yml` dosyası siteyi otomatik yayımlar.
+Üretim hedefi Serdivan Cepte SSO'dur. Belediye bilgi işlem birimiyle OAuth/OIDC veya authorization-code akışı netleşmeden mevcut Auth kaldırılmamalıdır.
 
-## 7. Alan adı
+## 7. Canlıya geçiş kontrolü
 
-Kurumsal alan adı kullanılacaksa GitHub Pages Custom Domain ayarı yapılabilir. DNS tarafında GitHub Pages tarafından verilen kayıtlar kullanılmalıdır.
-
-## 8. Supabase Auth yönlendirmeleri
-
-Kullanıcı giriş sistemi açılmadan önce Supabase Auth → URL Configuration bölümünde:
-
-- Site URL
-- Redirect URLs
-
-alanları gerçek yayın adresine göre düzenlenmelidir.
-
-## 9. Canlıya geçiş kontrol listesi
-
-- [ ] Supabase migration dosyaları eksiksiz çalıştı.
-- [ ] Public anon key doğru eklendi.
-- [ ] RLS politikaları kontrol edildi.
-- [ ] `service_role` anahtarı repoda bulunmuyor.
-- [ ] Harita noktaları kontrol edildi.
-- [ ] Anlaşmalı işletme bilgileri güncel.
-- [ ] Otobüs hat/durak verileri güncel.
-- [ ] Yemek menüsü senkronizasyon yöntemi belirlendi.
-- [ ] Auth yönlendirme URL’leri ayarlandı.
-- [ ] Mobil görünüm kontrol edildi.
-- [ ] GitHub Pages yayını başarıyla tamamlandı.
-
-
-## Şifresiz isim girişi
-
-Mevcut kullanıcı girişi istemci tarafında çalışır ve ek bir Supabase ayarı gerektirmez. Kullanıcının yazdığı ad tarayıcının yerel depolamasında tutulur. Bu yöntem yönetici yetkilendirmesi veya hassas veri erişimi için kullanılmamalıdır. Kurumsal kimlik doğrulama gerektiğinde Supabase Auth ayrıca etkinleştirilmelidir.
+- [ ] Repo kök yapısı doğru
+- [ ] `config.js` publishable key içeriyor
+- [ ] Secret/service role repoda yok
+- [ ] Son migration uygulanmış
+- [ ] Edge Functions deploy edilmiş
+- [ ] `ALLOWED_ORIGINS` canlı domaine göre ayarlı
+- [ ] RLS politikaları aktif
+- [ ] Storage politikaları test edildi
+- [ ] Yönetici rol testleri yapıldı
+- [ ] Mobil Safari/Chrome testi yapıldı
+- [ ] Harita mobil sürükleme testi yapıldı
+- [ ] Topluluk paylaşım metin + görsel testi yapıldı
+- [ ] Nev+ modül linkleri test edildi
+- [ ] Auth/SSO callback akışı doğrulandı

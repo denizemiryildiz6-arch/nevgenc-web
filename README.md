@@ -1,452 +1,324 @@
-# NevGenç Web Platformu
+# Serdivan NevGenç
 
-NevGenç; Sakarya’daki üniversite öğrencilerinin üniversite, belediye ve öğrenci topluluklarından gelen duyuruları tek akışta takip edebilmesi; toplulukları izleyebilmesi ve kampüs/şehir yaşamındaki temel hizmetlere erişebilmesi amacıyla geliştirilen web tabanlı bir öğrenci platformudur.
+NevGenç; üniversite öğrencilerinin etkinlik, topluluk, kampüs hizmeti, fırsat ve şehir içi öğrenci servislerine tek bir mobil öncelikli web arayüzünden erişmesini amaçlayan öğrenci platformudur.
 
-Platformun ana yapısı beş bölümden oluşur:
+Bu depo NevGenç’in kullanıcı arayüzünü, Supabase veritabanı şemasını, güvenlik politikalarını ve yönetim fonksiyonlarını içerir.
 
-**Ana Sayfa · Topluluklar · Harita · Fırsatlar · Profil**
+## Güncel ana navigasyon
 
-Proje mobil öncelikli hazırlanmıştır. Masaüstü tarayıcılarda da aynı veri yapısı ve işlevler korunur.
+Uygulamanın alt menüsü beş ana bölümden oluşur:
 
----
+**Etkinlikler · Topluluklar · Nev+ · Fırsatlar · Harita**
 
-## 1. Projenin Amacı
+Profil ve yetkili yönetim paneli sağ üstteki kullanıcı alanından açılır.
 
-NevGenç'in temel işlevi **duyuru ve katılım akışıdır**. Ana sayfa; Sakarya Üniversitesi, Serdivan Belediyesi ve öğrenci topluluklarının öğrenciyi ilgilendiren duyuru ve etkinliklerini bir araya getirir. Kullanıcılar toplulukları takip edebilir, etkinliklerde **Katılacağım / İlgileniyorum** tercihi bırakabilir ve takip ettikleri toplulukların içeriklerini ayrı filtreleyebilir.
+### Etkinlikler
 
-Bunun yanında aşağıdaki bilgiler ve hizmetler tek arayüzde toplanır:
+- Üniversite, belediye ve öğrenci topluluklarından duyuru/etkinlik akışı
+- Yaklaşan etkinlikler
+- `Katılacağım` ve `İlgileniyorum` işlemleri
+- Takip edilen toplulukların içeriklerinin öne çıkarılması
 
-- Sakarya Üniversitesi, Serdivan Belediyesi ve topluluk duyuruları
-- Sakarya Üniversitesi öğrenci toplulukları ve takip sistemi
-- Kampüs ve Serdivan üzerindeki önemli noktalar
-- Anlaşmalı işletmeler
-- Belediye otobüs hatları ve durak bilgileri
-- Sakarya Üniversitesi Merkez Kütüphanesi bilgileri ve çalışma alanı randevusu
-- Sakarya Üniversitesi yemek menüsü
-- Katılacağım etkinlikleri ve kütüphane randevularını birleştiren kişisel takvim
-- Öğrencilere yönelik staj, burs, yarışma ve gönüllülük fırsatları
-- Şifresiz isim girişi, kullanıcı profili ve ileride kullanılacak N Puan sistemi
+### Topluluklar
 
-Veri yapısı, doğrulanmış bilgilerin kaynağı ve son doğrulama tarihiyle birlikte saklanmasına uygun olarak hazırlanmıştır.
+- SAÜ öğrenci toplulukları
+- Arama ve kategori filtreleri
+- Topluluk takip sistemi
+- Topluluk detay sayfası
+- Topluluk yöneticileri ve isteğe bağlı kamuya açık e-posta
+- Topluluk gönderileri, metin ve görsel paylaşımı
 
----
+### Nev+
 
-## 2. Mevcut Veri İçeriği
+Nev+ günlük öğrenci araçlarının toplandığı merkez sekmedir.
 
-Projede 26 Ağustos 2026 tarihinde doğrulanan başlangıç veri seti bulunmaktadır.
+Aktif modüller:
 
-### Öğrenci toplulukları
+- Oyun Odası
+  - Sudoku
+  - Balon Patlat
+- Topluluk Haberleri
+- Menüde Ne Var?
+- İş İlanları
+- Kütüphane / çalışma alanı randevusu
+- En Ucuz Nerede Yerim? / Öğrenci Dostu İşletmeler
+- Serdivan Sosyal Tesisleri
 
-Sakarya Üniversitesi resmî Öğrenci Toplulukları kaynağından derlenen **206 topluluk** sisteme eklenmiştir.
+Hazırlanan ancak henüz canlı veri gereksinimleri tamamlanmayan modül:
 
-Topluluklar dokuz ana kategoride sınıflandırılmıştır:
+- Kampüs Pazarı — `Çok yakında`
 
-- Sosyal Bilimler
-- Fen Bilimleri
-- Fikir
-- Uluslararası
-- Spor
-- Sosyal Sorumluluk
-- Sağlık Bilimleri
-- Teknoloji
-- Kültür-Sanat
+Canlı veri gerektiren alanlarda tahmini veya doğrulanmamış veri gösterilmez. Örneğin kütüphane doluluk oranı gerçek veri kaynağı sağlanmadan “canlı” olarak sunulmaz; öğrenci işletmelerinde fiyat karşılaştırması güncel fiyat verisi sağlandıktan sonra açılır.
 
-Resmî sosyal medya bağlantısı bulunan topluluklarda bu bağlantılar da veri setine eklenmiştir. Açıklama veya iletişim bilgisi doğrulanamayan alanlarda tahmini bilgi kullanılmamıştır.
+### Fırsatlar
 
-### Anlaşmalı işletmeler
+- İş ve staj ilanları
+- Burs, yarışma, eğitim ve araştırma fırsatları
+- Kaynak bağlantıları
 
-Mevcut anlaşmalı işletmeler:
+### Harita
+
+- SAÜ kampüs noktaları
+- Kütüphane ve yemekhane
+- NevGenç anlaşmalı işletmeleri
+- Belediye otobüs hatları ve doğrulanmış duraklar
+- Leaflet + OpenStreetMap altyapısı
+
+## Anlaşmalı işletmeler
+
+Mevcut başlangıç listesi:
 
 1. Pandora Sakarya Güzellik Merkezi
-2. British Way Yabancı Dil Kursu Sakarya
+2. British Town Yabancı Dil Okulu Sakarya
 3. Reyhan Pasta Cafe
 
-İndirim oranı veya kampanya şartı kesinleşmemiş işletmeler için sistemde oran bilgisi gösterilmez.
+İndirim/avantaj oranı doğrulanmadıkça kullanıcıya oran gösterilmez.
 
-### Ulaşım
+## Serdivan sosyal tesis verileri
 
-Kampüsle bağlantılı **14 belediye otobüs hattı** için veri yapısı ve durak sıraları hazırlanmıştır:
+Nev+ içinde Serdivan Belediyesi resmî kaynakları esas alınarak aşağıdaki tesisler başlangıç verisine eklenmiştir:
 
-**4, 6, 12, 15, 16K, 19K, 20, 20A, 21K, 22K, 24K, 26, 27, 29**
+- Gölpark
+- Millet Bahçesi
+- Kırantepe Sosyal Tesisleri
+- Yıldız Kafe Çay Bahçesi
+- Serdivan Çay Ocağı
+- Şehit Mehmet Öztürk Kütüphanesi ve İnternet Evi
+- Serdivan Kültür Sanat Kütüphanesi
 
-Hat ve durak adları ile durak sıraları Sakarya Büyükşehir Belediyesi SAKUS kaynağı esas alınarak tutulmaktadır. Harita üzerinde başlangıç olarak koordinatı ayrıca doğrulanmış kampüs ve Serdivan durakları gösterilir. Bir hat seçildiğinde, o hatta ait koordinatı doğrulanmış duraklar haritada; hattın tüm durakları ise resmî sırasıyla bilgi panelinde gösterilir. Tam güzergâh geometrisi belediye veri kaynağından sağlandığında `route_geojson` alanına aktarılır ve mevcut harita bileşeni rotayı doğrudan çizer.
+Bu kayıtlar `municipal_facilities` tablosuna aktarılabilir ve Supabase üzerinden güncellenebilir.
 
-### Kütüphane
+## Teknoloji
 
-Sakarya Üniversitesi Merkez Kütüphanesi için doğrulanmış kapasite, alan, adres ve iletişim bilgileri bulunmaktadır.
-
-### Yemekhane
-
-Sakarya Üniversitesi SABİS yemek menüsü resmî veri kaynağı olarak tanımlanmıştır. Menü içeriği dinamik yayımlandığı için doğrulanmamış yemek adları sabit veri olarak eklenmemiştir. Günlük otomatik menü aktarımı Supabase tarafında zamanlanmış görev veya sunucu fonksiyonu ile tamamlanabilir.
-
----
-
-
-## 3. Ana Sayfa ve Duyuru Akışı
-
-Ana sayfa tanıtım ekranı olarak değil, günlük kullanım ekranı olarak tasarlanmıştır. Duyurular şu kaynak türleriyle ayrılır:
-
-- Sakarya Üniversitesi
-- Serdivan Belediyesi
-- Öğrenci toplulukları
-- NevGenç tarafından yayınlanan platform duyuruları
-
-Kullanıcılar akışı **Tümü, Üniversite, Belediye, Topluluklar ve Takip Ettiklerim** filtreleriyle görüntüleyebilir.
-
-Topluluk kartlarında bulunan **Takip Et** işlemi, ilgili topluluğun duyurularını kişiselleştirilmiş akışa dahil eder. Etkinlik niteliğindeki duyurularda **Katılacağım** ve tüm uygun duyurularda **İlgileniyorum** tercihleri kullanılabilir.
-
-Bu sürümde kullanıcı ilk açılışta yalnızca **adını yazarak** giriş yapar; parola istenmez. Supabase üzerinde anonim oturum özelliği etkinse bu giriş arka planda benzersiz bir kullanıcı kimliğine bağlanır ve takip, duyuru tercihleri ile kütüphane randevuları RLS kuralları altında Supabase üzerinde saklanabilir. Anonim oturum kapalıysa sistem aynı işlemleri cihaz üzerinde yerel olarak sürdürür.
-
----
-
-## 4. Kullanıcı Girişi
-
-Mevcut sürümde giriş akışı özellikle basit tutulmuştur. Kullanıcı siteyi ilk açtığında yalnızca **Ad Soyad** alanını doldurur ve **Devam Et** düğmesine basar. Şifre, e-posta veya SMS doğrulaması istenmez.
-
-Girilen ad cihazda saklanır ve Profil ekranında gösterilir. Supabase **Anonymous Sign-Ins** etkinleştirildiğinde aynı akış kullanıcıdan e-posta veya parola istemeden bir Supabase Auth kimliği oluşturur. Böylece kişisel takipler, etkinlik tercihleri ve kütüphane randevuları kullanıcı bazında saklanabilir. Yönetici yetkileri bu basit girişe bağlanmamalıdır.
-
----
-
-## 5. Teknoloji Yapısı
-
-Frontend tarafı mümkün olduğunca bağımlılığı düşük ve bakım yapılabilir olacak şekilde hazırlanmıştır.
+Frontend:
 
 - HTML5
 - CSS3
 - Vanilla JavaScript
 - Leaflet.js
 - OpenStreetMap
-- Supabase
-  - PostgreSQL
-  - Auth
-  - Row Level Security (RLS)
-- GitHub Pages / GitHub Actions
 
-Projede Node.js veya derleme adımı zorunlu değildir. Statik dosyalar doğrudan yayınlanabilir.
+Backend / veri:
 
----
+- Supabase PostgreSQL
+- Supabase Auth
+- Row Level Security (RLS)
+- Supabase Storage
+- Supabase Edge Functions
 
-## 6. Proje Klasör Yapısı
+Yayın:
+
+- GitHub Pages
+- GitHub Actions veya `main / (root)` Pages yayını
+
+Proje için zorunlu bir frontend build adımı yoktur.
+
+## Kimlik doğrulama
+
+### Mevcut test altyapısı
+
+Depodaki mevcut kullanıcı girişi Supabase Auth üzerinden öğrenci e-posta adresi + parola + e-posta doğrulaması ile çalışacak şekilde hazırlanmıştır.
+
+### Hedef üretim entegrasyonu
+
+Belediye tarafındaki hedef akış, kullanıcının **Serdivan Cepte** hesabıyla NevGenç’e tekrar kayıt olmadan geçmesidir. Bilgi işlem birimiyle entegrasyon yöntemi kesinleştiğinde mevcut giriş ekranı SSO akışına dönüştürülecektir.
+
+Tercih sırası:
+
+1. OAuth 2.0 / OpenID Connect
+2. Kısa ömürlü tek kullanımlık authorization code
+3. Kurumsal imzalı JWT doğrulaması
+
+Kullanıcı e-postası veya kalıcı erişim tokenı URL parametresinde taşınmamalıdır.
+
+## Roller ve yetkiler
+
+Temel roller:
+
+- `user` — normal öğrenci
+- topluluk yöneticisi — yalnız atandığı topluluk
+- kurum editörü — belediye veya üniversite adına içerik
+- `platform_admin` — merkez yönetim
+
+Kurallar:
+
+- Her toplulukta en fazla 4 aktif yönetici
+- İlk topluluk yöneticisi platform yöneticisi tarafından atanır
+- Sonraki yöneticiler mevcut topluluk yöneticileri tarafından eklenebilir
+- En fazla 4 platform yöneticisi
+- Giriş e-postası otomatik olarak kamuya açık iletişim bilgisi yapılmaz
+- Topluluk ve yönetici iletişimi yalnız isteğe bağlı kamuya açık e-posta üzerinden yürütülür
+
+Yetki kontrolü yalnız kullanıcı arayüzündeki butonlara bırakılmaz; veritabanı RLS politikaları ve Edge Functions ile sunucu tarafında doğrulanır.
+
+## Yönetim paneli
+
+Yetkili hesaplarda `#/yonetim` rotası üzerinden yönetim paneli açılır.
+
+Panelde:
+
+- topluluk gönderisi oluşturma
+- metin veya görsel paylaşımı
+- topluluk gönderilerini yayından kaldırma
+- duyuru / etkinlik oluşturma
+- topluluk açıklaması ve iletişim e-postası
+- yönetici kartı bilgileri
+- topluluk yöneticisi atama
+- kurum editörü atama
+- platform yöneticisi atama
+
+işlemleri rol seviyesine göre gösterilir.
+
+Topluluk gönderi görselleri Supabase Storage `community-posts` bucket’ında tutulur. JPG, PNG ve WEBP kabul edilir; frontend 5 MB sınırı uygular ve Storage politikaları yetkiyi topluluk bazında denetler.
+
+## Proje dizin yapısı
 
 ```text
-NevGenc/
-│
-├── index.html                 Ana uygulama dosyası
-├── 404.html                   GitHub Pages hata/yönlendirme sayfası
-├── README.md                  Proje açıklaması ve kurulum rehberi
-├── dev-server.bat             Windows üzerinde yerel test başlatıcısı
-│
+.
+├── index.html
+├── 404.html
+├── README.md
 ├── assets/
-│   ├── css/
-│   │   └── app.css            Tüm arayüz stilleri
-│   ├── img/                   Logo ve görsel dosyaları
+│   ├── css/app.css
+│   ├── img/
 │   └── js/
-│       ├── app.js             Uygulama başlangıcı ve yönlendirme
-│       ├── config.js          Supabase, harita ve veri kaynağı ayarları
-│       ├── map.js             Leaflet harita işlemleri
-│       ├── views.js           Ekran bileşenleri
+│       ├── app.js
+│       ├── config.js
+│       ├── map.js
+│       ├── views.js
 │       ├── data/
-│       │   ├── official-data.js  Doğrulanmış açık veri seti
-│       │   ├── announcements.js  Doğrulanmış başlangıç duyuruları
-│       │   └── seed.js           Yerel veri başlangıç katmanı
+│       │   ├── official-data.js
+│       │   ├── announcements.js
+│       │   ├── opportunities.js
+│       │   ├── nevplus.js
+│       │   └── seed.js
 │       └── services/
-│           ├── supabase.js       Supabase istemcisi
-│           ├── session.js        Geçici şifresiz isim oturumu
-│           └── repositories.js   Veri erişim katmanı
-│
+│           ├── supabase.js
+│           ├── session.js
+│           └── repositories.js
 ├── supabase/
-│   └── migrations/            Veritabanı tablo, güvenlik ve veri aktarımları
-│
-├── docs/
-│   ├── MIMARI.md              Teknik mimari
-│   ├── VERI-KAYNAKLARI.md     Kullanılan resmî veri kaynakları
-│   └── YAYINLAMA.md           GitHub Pages ve Supabase yayınlama adımları
-│
-└── .github/
-    └── workflows/
-        └── pages.yml           GitHub Pages otomatik yayın iş akışı
+│   ├── migrations/
+│   └── functions/
+│       ├── content-admin/
+│       ├── role-admin/
+│       └── _shared/
+└── docs/
 ```
 
----
+## Supabase migration sırası
 
-## 7. Yerel Ortamda Çalıştırma
+Yeni bir proje kurulurken migration dosyaları dosya adındaki sıra korunarak çalıştırılmalıdır:
 
-Proje statik olduğu için `index.html` dosyası doğrudan açılabilir. Ancak harita, Supabase ve CDN kaynaklarının doğru çalışması için yerel HTTP sunucusu kullanılması önerilir.
+```text
+001_core.sql
+002_seed_verified.sql
+002b_transport_key_fix.sql
+003_verified_public_data.sql
+004_duyuru_ve_takip.sql
+005_duyuru_baslangic_verisi.sql
+006_harita_dogrulanmis_koordinatlar.sql
+007_kutuphane_randevu_alanlari.sql
+008_guvenli_auth_roller.sql
+009_guncel_resmi_veri.sql
+010_topluluk_sayfalari_ve_paylasimlar.sql
+011_nevplus_ve_isletme_duzeltmeleri.sql
+```
 
-### Windows
+Daha önce 001–010 uygulanmış mevcut NevGenç veritabanında yalnızca yeni `011` migration’ı çalıştırılır.
 
-Proje kökündeki:
+## Edge Functions
+
+Projede iki korumalı Edge Function bulunur:
+
+```text
+content-admin
+role-admin
+```
+
+Deploy:
+
+```bash
+npx supabase@latest functions deploy content-admin --use-api
+npx supabase@latest functions deploy role-admin --use-api
+```
+
+Canlı origin kısıtlaması için örnek:
+
+```bash
+npx supabase@latest secrets set ALLOWED_ORIGINS=https://ORNEK.github.io
+```
+
+`SUPABASE_SERVICE_ROLE_KEY` veya Supabase secret key frontend dosyalarına ya da GitHub reposuna yazılmamalıdır.
+
+## Supabase bağlantısı
+
+`assets/js/config.js`:
+
+```js
+NevGenc.config = {
+  supabase: {
+    url: 'https://PROJE.supabase.co',
+    anonKey: 'PUBLISHABLE_KEY'
+  }
+}
+```
+
+Frontend’de yalnız publishable/anon anahtar kullanılır. Yetki güvenliği RLS ile sağlanır.
+
+## Yerel çalıştırma
+
+Windows:
 
 ```text
 dev-server.bat
 ```
 
-dosyası çalıştırılabilir.
-
-### Python ile
-
-Proje klasöründe terminal açılarak:
+veya:
 
 ```bash
 python -m http.server 5500
 ```
 
-komutu çalıştırılır.
-
-Daha sonra tarayıcıdan:
+Tarayıcı:
 
 ```text
 http://localhost:5500
 ```
 
-adresine girilir.
+`file://` üzerinden açmak yerine HTTP sunucusu kullanılması önerilir.
 
----
+## GitHub Pages yayını
 
-## 8. Supabase Kurulumu
+Repo kökünde `index.html` bulunmalıdır.
 
-### 7.1. Yeni Supabase projesi oluşturma
+GitHub Pages için iki yöntem kullanılabilir:
 
-Supabase üzerinde yeni bir proje oluşturulur.
+- `Settings → Pages → Deploy from a branch → main → /(root)`
+- depodaki GitHub Actions iş akışı
 
-### 7.2. SQL dosyalarını çalıştırma
+Hash routing kullanıldığı için rotalar `#/etkinlikler`, `#/topluluklar`, `#/nevplus` biçimindedir.
 
-Supabase Dashboard → **SQL Editor** bölümünde aşağıdaki dosyalar sırayla çalıştırılmalıdır:
+## Güvenlik notları
 
-```text
-supabase/migrations/001_core.sql
-supabase/migrations/002_seed_verified.sql
-supabase/migrations/002b_transport_key_fix.sql
-supabase/migrations/003_verified_public_data.sql
-supabase/migrations/004_duyuru_ve_takip.sql
-supabase/migrations/005_duyuru_baslangic_verisi.sql
-supabase/migrations/006_harita_dogrulanmis_koordinatlar.sql
-supabase/migrations/007_kutuphane_randevu_alanlari.sql
-```
+- `service_role` frontend’de kullanılmaz.
+- RLS canlı tablolarda açık tutulmalıdır.
+- Yönetici rolü yalnız UI üzerinden kontrol edilmez.
+- Kullanıcıdan gelen metinler HTML escape işleminden geçirilir.
+- Harici bağlantılar HTTPS ile sınırlandırılır.
+- Topluluk görsel türü ve boyutu sınırlandırılır.
+- Kişisel giriş e-postası kamuya açık yönetici iletişim alanına otomatik kopyalanmaz.
+- Canlıya geçişten önce Auth/SSO, RLS, Edge Functions ve Storage politikaları staging ortamında yeniden test edilmelidir.
 
-> Mevcut bir NevGenç Supabase veritabanı kullanılıyorsa tüm şemayı yeniden kurmak gerekmez. Harita düzeltmesi için en az `006_harita_dogrulanmis_koordinatlar.sql` dosyasının çalıştırılması gerekir. Frontend, bu migration uygulanmadan önce de yerel doğrulanmış koordinatları yedek olarak kullanır.
+Detaylı güvenlik notları `docs/GUVENLIK-v14.md` ve teknik mimari `docs/MIMARI.md` dosyasındadır.
 
-Bu dosyalar:
+## Veri yaklaşımı
 
-- temel tabloları,
-- kullanıcı profili yapısını,
-- RLS güvenlik politikalarını,
-- topluluk verilerini,
-- anlaşmalı işletmeleri,
-- ulaşım hatlarını ve durak ilişkilerini,
-- duyuru akışını,
-- topluluk takiplerini,
-- Katılacağım / İlgileniyorum kullanıcı tercihlerini,
-- haritada kullanılan doğrulanmış kampüs, işletme ve ilk durak koordinatlarını
+NevGenç’te doğrulanmayan canlı bilgi üretilmez. Veri kaynağı bulunmayan alanlar:
 
-oluşturur.
+- `Çok yakında`
+- resmî kaynağa yönlendirme
+- mevcut doğrulanmış sabit bilgi
 
-### 7.3. Şifresiz kullanıcı oturumunu Supabase ile kalıcılaştırma
+şeklinde ele alınır.
 
-Supabase Dashboard → **Authentication → Providers / Sign In Methods** bölümünde **Anonymous Sign-Ins** etkinleştirilir. Bu ayar açık olduğunda kullanıcı yine yalnızca adını yazar; e-posta veya parola istenmez. Arka planda oluşturulan anonim kullanıcı kimliği RLS politikalarıyla kişisel verileri ayırır.
-
-### 7.4. Bağlantı bilgilerini ekleme
-
-Supabase Dashboard → **Project Settings → API** bölümünden:
-
-- Project URL
-- Public `anon` key
-
-alınır.
-
-`assets/js/config.js` dosyasındaki aşağıdaki alanlar doldurulur:
-
-```js
-supabase: {
-  url: 'SUPABASE_PROJECT_URL',
-  anonKey: 'SUPABASE_PUBLIC_ANON_KEY'
-}
-```
-
-### Güvenlik uyarısı
-
-`service_role` anahtarı hiçbir zaman frontend dosyalarına veya herkese açık GitHub deposuna eklenmemelidir.
-
-Frontend üzerinde yalnızca Supabase’in public `anon` anahtarı kullanılmalıdır. Veri erişim yetkileri RLS politikalarıyla sınırlandırılır.
-
----
-
-## 9. GitHub Üzerinden Yayınlama
-
-Proje GitHub deposunun kök dizinine aktarılır.
-
-Önerilen ana dal:
-
-```text
-main
-```
-
-Depoda bulunan:
-
-```text
-.github/workflows/pages.yml
-```
-
-GitHub Pages dağıtımını otomatik olarak gerçekleştirir.
-
-GitHub üzerinde:
-
-**Settings → Pages → Source → GitHub Actions**
-
-seçilmelidir.
-
-`main` dalına yapılan sonraki gönderimlerde site otomatik olarak yeniden yayımlanır.
-
-Ayrıntılı bilgi için `docs/YAYINLAMA.md` dosyasına bakılabilir.
-
----
-
-## 10. Harita Sistemi
-
-Harita için **Leaflet.js + OpenStreetMap** kullanılmaktadır.
-
-Harita veri modeli aşağıdaki türleri desteklemektedir:
-
-- Kampüs noktaları
-- Kütüphane
-- Yemekhane
-- Anlaşmalı işletmeler
-- Otobüs durakları
-- Belediye otobüs hatları
-- Diğer öğrenci hizmet noktaları
-
-Kampüs, Merkez Kütüphane, Öğrenci Yemekhanesi ve mevcut üç anlaşmalı işletmenin koordinatları proje veri setinde sabitlenmiştir. Bu temel noktalar tarayıcı tarafında adres çözümlemesine ihtiyaç duymadan doğrudan haritada açılır. Aynı koordinatlar `006_harita_dogrulanmis_koordinatlar.sql` dosyasıyla Supabase tarafına da aktarılır.
-
-Ulaşım katmanında SAKUS'tan alınan tam durak sırası korunur. Koordinatı ayrıca doğrulanmış duraklar harita üzerinde gösterilir ve durak listesinden seçilebilir. Tam hat geometrileri belediyeden/kurum içi veri servisinden sağlandığında `transport_lines.route_geojson` alanına yazılması yeterlidir; arayüz bu geometriyi otomatik olarak çizer. Doğrulanmamış duraklara tahmini koordinat verilmez.
-
----
-
-## 11. Veri Güncelleme İlkesi
-
-Projede resmî kaynaklardan gelen bilgiler mümkün olduğunca kaynak URL’si ve doğrulama tarihiyle saklanmaktadır.
-
-Sık değişen verilerin sabit olarak tutulmaması önerilir. Örnekler:
-
-- günlük yemek menüsü,
-- işletme çalışma saatleri,
-- kampanya ve indirim oranları,
-- topluluk yönetim bilgileri,
-- otobüs güzergâh değişiklikleri,
-- geçici fırsat ve etkinlikler.
-
-Bu veriler için Supabase üzerinden yönetim ekranı veya zamanlanmış veri güncelleme mekanizması kullanılabilir.
-
-Kullanılan açık veri kaynaklarının listesi `docs/VERI-KAYNAKLARI.md` dosyasındadır.
-
----
-
-## 12. Güvenlik
-
-Projede aşağıdaki temel güvenlik prensipleri uygulanmıştır:
-
-- Supabase `service_role` anahtarı istemci tarafında kullanılmaz.
-- Kullanıcıya özel veriler RLS politikalarıyla korunur.
-- Mevcut şifresiz isim girişi yalnızca cihaz içi kişiselleştirme sağlar ve güvenli kimlik doğrulama olarak kabul edilmez.
-- Supabase Auth etkinleştirildiğinde kullanıcı profil kaydı doğrulanmış Auth kullanıcısıyla ilişkilendirilir.
-- Haricî bağlantılar yeni sekmede güvenli `rel="noopener"` özelliğiyle açılır.
-- Kullanıcıya gösterilen dinamik metinlerde HTML kaçış işlemi uygulanır.
-- `.env` dosyaları Git tarafından yok sayılır.
-
-Kurumsal kullanıcı doğrulamasına geçildiğinde alan adı, CORS, Supabase Auth yönlendirme adresleri ve RLS politikalarının kurum ortamında ayrıca kontrol edilmesi önerilir.
-
----
-
-## 13. Mevcut Durum ve Sonraki Aşamalar
-
-Mevcut proje; duyuru odaklı ana kullanıcı arayüzünü, topluluk takiplerini, Katılacağım / İlgileniyorum tercihlerini, veri modelini, harita ve ulaşım altyapısını, doğrulanmış açık veri setini ve Supabase veritabanı yapısını içermektedir.
-
-Canlı kullanım öncesinde tamamlanması önerilen başlıca çalışmalar:
-
-1. Kuruma ait Supabase projesinin oluşturulması ve bağlantı bilgilerinin eklenmesi.
-2. Mevcut ad tabanlı geçici girişin, gerekli görülürse e-posta/kurumsal hesap veya başka bir doğrulama yöntemiyle güçlendirilmesi.
-3. Günlük SAÜ yemek menüsünün otomatik senkronizasyonunun kurulması.
-4. Belediye tarafından sağlanacak doğrulanmış rota geometrileri ve durak koordinatlarının harita katmanına eklenmesi.
-5. Anlaşmalı işletmelerin güncel avantaj/indirim bilgilerinin yönetim ekranından girilmesi.
-6. Fırsat ve duyuru içerikleri için yetkili yönetim ekranının hazırlanması.
-7. Kurumsal alan adı ve yayın ortamının belirlenmesi.
-
----
-
-## 14. Veri Kaynakları
-
-Başlıca kaynaklar:
-
-- Sakarya Üniversitesi Öğrenci Toplulukları  
-  https://topluluk.sakarya.edu.tr/
-- Sakarya Üniversitesi Kütüphane ve Dokümantasyon Dairesi Başkanlığı  
-  https://kutuphane.sakarya.edu.tr/
-- Sakarya Üniversitesi SABİS Yemek Menüsü  
-  https://menu.sabis.sakarya.edu.tr/
-- Sakarya Büyükşehir Belediyesi SAKUS  
-  https://sakus.sakarya.bel.tr/harita
-- Sakarya Üniversitesi Haber / Duyuru kaynakları  
-  https://haber.sakarya.edu.tr/  
-  https://adabis.sakarya.edu.tr/
-- Serdivan Belediyesi  
-  https://www.serdivan.bel.tr/
-
-Anlaşmalı işletme verilerinde işletmelerin kendi resmî kanalları ve proje kapsamında doğrulanan işletme kayıtları esas alınmıştır.
-
----
-
-## 15. Teknik Not
-
-Uygulama arayüzü hash tabanlı yönlendirme kullanır:
-
-```text
-#/anasayfa
-#/topluluklar
-#/harita
-#/firsatlar
-#/profil
-```
-
-Bu yöntem, statik GitHub Pages yayınında sunucu tarafı yönlendirme ihtiyacını ortadan kaldırır ve doğrudan dağıtımı kolaylaştırır.
-
-## v13 — Topluluk sayfaları ve yönetim paneli
-
-Bu sürümde topluluk yapısı gerçek kullanım için genişletildi.
-
-- Topluluk kartına tıklanınca `#/topluluk/<slug>` adresinde topluluk sayfası açılır.
-- Topluluk sayfasında yöneticiler en üstte gösterilir.
-- Yönetici giriş e-postası hiçbir zaman otomatik olarak yayımlanmaz. Yönetici isterse yönetim panelinden ayrı bir kamuya açık iletişim e-postası girer.
-- Topluluğun ayrıca isteğe bağlı bir ortak iletişim e-postası olabilir.
-- Telefon numarası veya kişisel mesajlaşma hesabı topluluk iletişim alanında gösterilmez.
-- Topluluk gönderileri en yeniden eskiye sıralanır.
-- Topluluk yöneticileri metin, görsel veya metin + görsel gönderisi yayımlayabilir.
-- Gönderi görselleri `community-posts` Supabase Storage bucket'ına yüklenir. Maksimum boyut 5 MB, izin verilen türler JPEG / PNG / WEBP'tir.
-- Yükleme yetkisi ve gönderi yazma yetkisi yalnızca arayüzde değil, Supabase RLS tarafından da topluluk bazında doğrulanır.
-- Topluluk başına maksimum 4 yönetici kuralı korunur.
-- Belediye / üniversite editörleri için isteğe bağlı kurumsal iletişim e-postası alanı eklenmiştir.
-
-### v13 veritabanı kurulumu
-
-Önce önceki migration'ları sırasıyla çalıştırın. Ardından:
-
-```text
-supabase/migrations/010_topluluk_sayfalari_ve_paylasimlar.sql
-```
-
-çalıştırılmalıdır.
-
-Migration otomatik olarak `community-posts` Storage bucket'ını ve gerekli Storage RLS politikalarını oluşturur.
-
-### Edge Function güncellemesi
-
-`content-admin` fonksiyonu v13 ile güncellenmiştir. Mevcut Supabase projesinde yeniden deploy edilmelidir:
-
-```bash
-supabase functions deploy content-admin
-supabase functions deploy role-admin
-```
-
-`SUPABASE_SERVICE_ROLE_KEY` yalnızca Edge Function secret'ı olarak tutulmalıdır. Frontend'e, GitHub Pages dosyalarına veya `config.js` içine eklenmemelidir.
-
-### İletişim güvenliği
-
-NevGenç'te kamuya açık iletişim adresi ile hesap giriş adresi birbirinden ayrıdır. `auth.users.email` veya `profiles.email_lower` public sayfalarda kullanılmaz. Public topluluk yönetici görünümü kullanıcı UUID'sini veya giriş e-postasını da döndürmez.
+Bu prensip özellikle yemek menüsü, kütüphane doluluğu, işletme fiyatları, ulaşım koordinatları ve kampüs pazarı için geçerlidir.

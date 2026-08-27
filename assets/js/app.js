@@ -1,13 +1,13 @@
 window.NevGenc = window.NevGenc || {};
 NevGenc.app = (()=>{
-  const routes={etkinlikler:NevGenc.views.eventsHome,anasayfa:NevGenc.views.eventsHome,topluluklar:NevGenc.views.communities,topluluk:NevGenc.views.communityDetail,kesfet:NevGenc.views.discover,firsatlar:NevGenc.views.opportunities,harita:NevGenc.views.mapView,profil:NevGenc.views.profile,kutuphane:NevGenc.views.libraryView,yemek:NevGenc.views.diningView,takvim:NevGenc.views.calendarView,yonetim:NevGenc.views.management};
+  const routes={etkinlikler:NevGenc.views.eventsHome,anasayfa:NevGenc.views.eventsHome,topluluklar:NevGenc.views.communities,topluluk:NevGenc.views.communityDetail,nevplus:NevGenc.views.nevPlus,kesfet:NevGenc.views.nevPlus,'oyun-odasi':NevGenc.views.gameRoom,'topluluk-haberleri':NevGenc.views.communityNews,'sosyal-tesisler':NevGenc.views.socialFacilities,'ogrenci-dostu':NevGenc.views.studentFriendly,yakinda:NevGenc.views.comingSoon,firsatlar:NevGenc.views.opportunities,harita:NevGenc.views.mapView,profil:NevGenc.views.profile,kutuphane:NevGenc.views.libraryView,yemek:NevGenc.views.diningView,takvim:NevGenc.views.calendarView,yonetim:NevGenc.views.management};
   const view=document.getElementById('view');
   function routeParts(){return location.hash.replace(/^#\//,'').split('/').filter(Boolean)}
   function routeName(){const raw=(routeParts()[0]||NevGenc.config?.defaultRoute||'etkinlikler').toLowerCase();return routes[raw]?raw:'etkinlikler'}
-  function navRoute(r){if(r==='anasayfa')return 'etkinlikler';if(r==='topluluk')return 'topluluklar';return r}
+  function navRoute(r){if(r==='anasayfa')return 'etkinlikler';if(r==='topluluk')return 'topluluklar';if(['nevplus','kesfet','oyun-odasi','topluluk-haberleri','sosyal-tesisler','ogrenci-dostu','yakinda','kutuphane','yemek','takvim'].includes(r))return 'nevplus';return r}
   function toast(message,type='info'){const el=document.getElementById('toast');if(!el)return;el.textContent=message;el.dataset.type=type;el.classList.add('show');clearTimeout(el._timer);el._timer=setTimeout(()=>el.classList.remove('show'),3200)}
   function esc(value=''){return String(value).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
-  function safeHref(value){const raw=String(value||'');if(raw.startsWith('#/'))return raw;try{const u=new URL(raw,location.origin);return u.protocol==='https:'?u.href:'#/kesfet'}catch{return '#/kesfet'}}
+  function safeHref(value){const raw=String(value||'');if(raw.startsWith('#/'))return raw;try{const u=new URL(raw,location.origin);return u.protocol==='https:'?u.href:'#/etkinlikler'}catch{return '#/etkinlikler'}}
   async function render(){
     const route=routeName();document.body.classList.toggle('map-route',route==='harita');
     document.querySelectorAll('.nav-item').forEach(a=>a.classList.toggle('active',a.dataset.route===navRoute(route)));
@@ -19,7 +19,7 @@ NevGenc.app = (()=>{
   async function bindRoute(route){
     bindFollowButtons();bindAnnouncementActions();
     if(route==='topluluklar')await bindCommunities();
-    if(route==='kesfet')await bindDiscover();
+    if(route==='oyun-odasi')bindGameRoom();
     if(route==='harita')await bindMap();
     if(route==='kutuphane')bindLibrary();
     if(route==='profil')bindProfile();
@@ -37,10 +37,7 @@ NevGenc.app = (()=>{
     document.getElementById('community-search')?.addEventListener('input',e=>{query=e.target.value.slice(0,80);draw()});
     document.getElementById('community-chips')?.addEventListener('click',e=>{const b=e.target.closest('[data-category]');if(!b)return;category=b.dataset.category;document.querySelectorAll('#community-chips [data-category]').forEach(x=>x.classList.toggle('active',x===b));draw()});
   }
-  async function bindDiscover(){
-    const [ann,followed,responses]=await Promise.all([NevGenc.repositories.announcements(),NevGenc.repositories.followedCommunitySlugs(),NevGenc.repositories.announcementResponses()]);const feed=document.getElementById('announcement-feed');
-    document.getElementById('announcement-filters')?.addEventListener('click',e=>{const b=e.target.closest('[data-announcement-filter]');if(!b)return;const f=b.dataset.announcementFilter;document.querySelectorAll('#announcement-filters [data-announcement-filter]').forEach(x=>x.classList.toggle('active',x===b));const items=ann.data.filter(a=>f==='all'||(f==='following'?a.communitySlug&&followed.has(a.communitySlug):a.sourceType===f));feed.innerHTML=items.map(a=>NevGenc.views.feedCard(a,followed,responses)).join('')||'<div class="empty-panel">Bu akışta içerik yok.</div>';bindFollowButtons(feed);bindAnnouncementActions(feed)})
-  }
+
   async function bindMap(){
     const result=await NevGenc.repositories.locations(),status=document.getElementById('map-status');await NevGenc.map.init(document.getElementById('map'),result.data,status);const page=document.querySelector('.map-page');
     document.getElementById('map-filters')?.addEventListener('click',e=>{const b=e.target.closest('[data-map-filter]');if(!b)return;const type=b.dataset.mapFilter;document.querySelectorAll('#map-filters [data-map-filter]').forEach(x=>x.classList.toggle('active',x===b));page?.classList.toggle('transport-active',type==='transport');if(type!=='transport')page?.classList.remove('line-selected');NevGenc.map.filter(type)});
@@ -90,9 +87,28 @@ NevGenc.app = (()=>{
     document.getElementById('platform-admin-form')?.addEventListener('submit',e=>guardedAction(async()=>{e.preventDefault();const btn=e.currentTarget.querySelector('button[type=submit]');btn.disabled=true;try{await NevGenc.repositories.assignPlatformAdmin(document.getElementById('platform-admin-email').value);toast('Platform yöneticisi eklendi.');e.currentTarget.reset()}finally{btn.disabled=false}}));
   }
 
+  function bindGameRoom(){
+    const puzzleSets=[
+      {p:'530070000600195000098000060800060003400803001700020006060000280000419005000080079',s:'534678912672195348198342567859761423426853791713924856961537284287419635345286179'},
+      {p:'000260701680070090190004500820100040004602900050003028009300074040050036703018000',s:'435269781682571493197834562826195347374682915951743628519326874248957136763418259'}
+    ];
+    let current=null;
+    const grid=document.getElementById('sudoku-grid'),status=document.getElementById('sudoku-status');
+    const loadPuzzle=()=>{if(!grid)return;current=puzzleSets[Math.floor(Math.random()*puzzleSets.length)];grid.querySelectorAll('[data-sudoku-cell]').forEach((cell,i)=>{const value=current.p[i];cell.value=value==='0'?'':value;cell.disabled=value!=='0';cell.classList.toggle('given',value!=='0');cell.classList.remove('wrong','correct')});if(status)status.textContent='Boş hücreleri 1–9 arasında doldur.'};
+    grid?.addEventListener('input',e=>{const input=e.target.closest('[data-sudoku-cell]');if(!input)return;input.value=input.value.replace(/[^1-9]/g,'').slice(0,1);input.classList.remove('wrong','correct')});
+    document.getElementById('sudoku-new')?.addEventListener('click',loadPuzzle);
+    document.getElementById('sudoku-check')?.addEventListener('click',()=>{if(!current||!grid)return;let wrong=0,empty=0;grid.querySelectorAll('[data-sudoku-cell]').forEach((cell,i)=>{if(cell.disabled)return;if(!cell.value){empty++;cell.classList.remove('wrong','correct');return}const ok=cell.value===current.s[i];cell.classList.toggle('correct',ok);cell.classList.toggle('wrong',!ok);if(!ok)wrong++});if(status)status.textContent=wrong?`${wrong} hücreyi tekrar kontrol et.`:empty?`Doğru gidiyorsun; ${empty} hücre kaldı.`:'Tebrikler, sudoku tamamlandı.'});
+    loadPuzzle();
+
+    const balloon=document.getElementById('balloon'),stage=document.getElementById('balloon-stage'),scoreEl=document.getElementById('balloon-score'),timeEl=document.getElementById('balloon-time'),start=document.getElementById('balloon-start');let score=0,time=20,timer=null,playing=false;
+    const move=()=>{if(!stage||!balloon)return;const maxX=Math.max(0,stage.clientWidth-balloon.offsetWidth-8),maxY=Math.max(0,stage.clientHeight-balloon.offsetHeight-8);balloon.style.transform=`translate(${Math.random()*maxX}px,${Math.random()*maxY}px) scale(${.82+Math.random()*.3})`};
+    balloon?.addEventListener('click',()=>{if(!playing)return;score++;if(scoreEl)scoreEl.textContent=score;move()});
+    start?.addEventListener('click',()=>{if(playing)return;score=0;time=20;playing=true;if(scoreEl)scoreEl.textContent='0';if(timeEl)timeEl.textContent='20';start.disabled=true;stage?.classList.add('playing');move();timer=setInterval(()=>{time--;if(timeEl)timeEl.textContent=time;if(time<=0){clearInterval(timer);timer=null;playing=false;start.disabled=false;stage?.classList.remove('playing');start.textContent=`Tekrar oyna · Skor ${score}`}},1000)});
+  }
+
   async function bindGlobalSearch(){
     const overlay=document.getElementById('search-overlay'),input=document.getElementById('global-search-input'),results=document.getElementById('global-search-results');let cache=null,timer=null;
-    document.getElementById('global-search-button')?.addEventListener('click',async()=>{overlay.hidden=false;document.body.classList.add('modal-open');input.value='';results.innerHTML='<p class="search-hint">Topluluk, işletme, fırsat veya duyuru ara.</p>';setTimeout(()=>input.focus(),40);if(!cache){const [c,p,o,a]=await Promise.all([NevGenc.repositories.communities(),NevGenc.repositories.partners(),NevGenc.repositories.opportunities(),NevGenc.repositories.announcements()]);cache=[...c.data.map(x=>({type:'Topluluk',title:x.name,sub:x.category,href:`#/topluluk/${x.slug}`})),...p.data.map(x=>({type:'İşletme',title:x.name,sub:x.category,href:'#/firsatlar'})),...o.data.map(x=>({type:'Fırsat',title:x.title,sub:x.organization,href:x.url||'#/firsatlar'})),...a.data.map(x=>({type:a.kind,title:x.title,sub:x.sourceName,href:x.url||'#/kesfet'}))]}});
+    document.getElementById('global-search-button')?.addEventListener('click',async()=>{overlay.hidden=false;document.body.classList.add('modal-open');input.value='';results.innerHTML='<p class="search-hint">Topluluk, işletme, fırsat veya duyuru ara.</p>';setTimeout(()=>input.focus(),40);if(!cache){const [c,p,o,a]=await Promise.all([NevGenc.repositories.communities(),NevGenc.repositories.partners(),NevGenc.repositories.opportunities(),NevGenc.repositories.announcements()]);cache=[...c.data.map(x=>({type:'Topluluk',title:x.name,sub:x.category,href:`#/topluluk/${x.slug}`})),...p.data.map(x=>({type:'İşletme',title:x.name,sub:x.category,href:'#/ogrenci-dostu'})),...o.data.map(x=>({type:'Fırsat',title:x.title,sub:x.organization,href:x.url||'#/firsatlar'})),...a.data.map(x=>({type:a.kind,title:x.title,sub:x.sourceName,href:x.url||'#/etkinlikler'}))]}});
     const close=()=>{overlay.hidden=true;document.body.classList.remove('modal-open')};document.getElementById('search-close')?.addEventListener('click',close);overlay?.addEventListener('click',e=>{if(e.target===overlay)close()});
     input?.addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(()=>{const q=input.value.trim().toLocaleLowerCase('tr').slice(0,100);if(q.length<2){results.innerHTML='<p class="search-hint">En az 2 karakter yaz.</p>';return}const found=(cache||[]).filter(x=>`${x.title} ${x.sub||''}`.toLocaleLowerCase('tr').includes(q)).slice(0,20);results.innerHTML=found.length?found.map(x=>{const href=safeHref(x.href);const external=href.startsWith('https://');return `<a class="search-result" href="${esc(href)}" ${external?'target="_blank" rel="noopener noreferrer"':''}><span>${esc(x.type)}</span><strong>${esc(x.title)}</strong><small>${esc(x.sub||'')}</small></a>`}).join(''):'<p class="search-hint">Sonuç bulunamadı.</p>'},120)});
   }

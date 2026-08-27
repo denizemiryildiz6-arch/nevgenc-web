@@ -34,6 +34,7 @@ NevGenc.repositories = (() => {
   }
   async function opportunities(){const fb=NevGenc.opportunityData||[];return fromTable('opportunities',q=>q.eq('is_published',true).order('published_at',{ascending:false}),fb)}
   async function organizations(){return fromTable('organizations',q=>q.eq('is_active',true).order('name'),[])}
+  async function municipalFacilities(){const fb=[...(NevGenc.nevPlusData?.facilities||[]),...(NevGenc.nevPlusData?.libraries||[])].map((x,i)=>({...x,id:x.slug||`facility-${i}`,facility_type:x.type||'Kütüphane',facilityType:x.type||'Kütüphane',source_url:x.sourceUrl,verified_at:NevGenc.nevPlusData?.verifiedAt}));const r=await fromTable('municipal_facilities',q=>q.eq('is_active',true).order('name'),fb);return {data:r.data.map(x=>({...x,facilityType:x.facility_type||x.facilityType||x.type||'Tesis',sourceUrl:x.source_url||x.sourceUrl||null,verifiedAt:x.verified_at||x.verifiedAt||null})),source:r.source}}
 
   async function followedCommunitySlugs(){
     const c=NevGenc.supabase.getClient(),user=await NevGenc.supabase.currentUser();if(!c||!user)return new Set();
@@ -104,6 +105,19 @@ NevGenc.repositories = (() => {
     const {data,error}=await c.from('community_posts_public').select('id,community_id,body,image_path,published_at,author_name,author_role').eq('community_id',community.id).order('published_at',{ascending:false}).limit(100);
     if(error){console.warn('[NevGenç] topluluk gönderileri yüklenemedi',error);return {data:[],source:'supabase'}}
     return {data:(data||[]).map(x=>({...x,communityId:x.community_id,body:x.body||'',imagePath:x.image_path||null,publishedAt:x.published_at,authorName:x.author_name||'Topluluk Yönetimi',authorRole:x.author_role||'Yönetici',imageUrl:x.image_path?c.storage.from('community-posts').getPublicUrl(x.image_path).data.publicUrl:null})),source:'supabase'};
+  }
+
+  async function communityPostsFeed(limit=60){
+    const c=NevGenc.supabase.getClient();if(!c)return {data:[],source:'official'};
+    try{
+      const [posts,communitiesResult]=await Promise.all([
+        c.from('community_posts_public').select('id,community_id,body,image_path,published_at,author_name,author_role').order('published_at',{ascending:false}).limit(Math.max(1,Math.min(Number(limit)||60,100))),
+        c.from('communities').select('id,slug,name,category').eq('is_active',true)
+      ]);
+      if(posts.error)throw posts.error;if(communitiesResult.error)throw communitiesResult.error;
+      const byId=new Map((communitiesResult.data||[]).map(x=>[x.id,x]));
+      return {data:(posts.data||[]).map(x=>{const community=byId.get(x.community_id)||{};return {...x,communityId:x.community_id,communitySlug:community.slug||'',communityName:community.name||'Öğrenci Topluluğu',communityCategory:community.category||'',body:x.body||'',imagePath:x.image_path||null,publishedAt:x.published_at,authorName:x.author_name||'Topluluk Yönetimi',authorRole:x.author_role||'Yönetici',imageUrl:x.image_path?c.storage.from('community-posts').getPublicUrl(x.image_path).data.publicUrl:null}}),source:'supabase'};
+    }catch(err){console.warn('[NevGenç] topluluk haber akışı yüklenemedi',err);return {data:[],source:'supabase'}}
   }
 
   function validatePostImage(file){
@@ -193,5 +207,5 @@ NevGenc.repositories = (() => {
   async function assignPlatformAdmin(email){return invokeProtectedFunction('role-admin',{operation:'assign_platform_admin',targetEmail:String(email||'').trim().toLowerCase()})}
   async function assignOrganizationEditor(organizationSlug,email){return invokeProtectedFunction('role-admin',{operation:'assign_organization_editor',organizationSlug,targetEmail:String(email||'').trim().toLowerCase()})}
 
-  return {communities,communityBySlug,communityPublicAdmins,communityPosts,createCommunityPost,deleteCommunityPost,updateCommunityProfile,updateOrganizationProfile,ownCommunityAdminProfile,updateOwnCommunityAdminProfile,partners,locations,transportLines,transportLineDetail,announcements,opportunities,organizations,followedCommunitySlugs,toggleCommunityFollow,announcementResponses,toggleAnnouncementResponse,communityFollowCounts,librarySpaces,libraryReservations,createLibraryReservation,cancelLibraryReservation,diningMenu,diningMenusRange,accountContext,createAnnouncement,unpublishAnnouncement,assignCommunityAdmin,removeCommunityAdmin,assignPlatformAdmin,assignOrganizationEditor,profile:accountContext};
+  return {communities,communityBySlug,communityPublicAdmins,communityPosts,communityPostsFeed,createCommunityPost,deleteCommunityPost,updateCommunityProfile,updateOrganizationProfile,ownCommunityAdminProfile,updateOwnCommunityAdminProfile,partners,locations,transportLines,transportLineDetail,announcements,opportunities,organizations,municipalFacilities,followedCommunitySlugs,toggleCommunityFollow,announcementResponses,toggleAnnouncementResponse,communityFollowCounts,librarySpaces,libraryReservations,createLibraryReservation,cancelLibraryReservation,diningMenu,diningMenusRange,accountContext,createAnnouncement,unpublishAnnouncement,assignCommunityAdmin,removeCommunityAdmin,assignPlatformAdmin,assignOrganizationEditor,profile:accountContext};
 })();

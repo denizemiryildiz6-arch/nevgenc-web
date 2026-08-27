@@ -63,7 +63,7 @@ Projede kullanılan kampüs bağlantılı hatlar:
 Kaynak:  
 https://pandorasakarya.com/
 
-### British Way Yabancı Dil Kursu Sakarya
+### British Town Yabancı Dil Okulu Sakarya
 
 İşletme kaydı proje kapsamında doğrulanmıştır. Canlıya geçiş öncesi iletişim ve avantaj bilgilerinin yetkili kişi tarafından son kez kontrol edilmesi önerilir.
 
@@ -111,7 +111,7 @@ Haritada doğrudan gösterilen temel konumların koordinatları sabitlenmiştir:
 - SAÜ Merkez Kütüphanesi
 - Sakarya Üniversitesi Öğrenci Yemekhanesi
 - Pandora Sakarya Güzellik Merkezi
-- British Way Yabancı Dil Kursu Sakarya
+- British Town Yabancı Dil Okulu Sakarya
 - Reyhan Pasta Cafe
 
 Kütüphane için OpenStreetMap tabanlı konum kaydı, yemekhane için işletme/kapı harita kaydı, işletmeler için resmî işletme sayfaları veya proje kapsamında doğrulanan harita kayıtları kullanılmıştır.
@@ -121,3 +121,20 @@ Ulaşım katmanında ilk doğrulanmış durak koordinatları arasında Kampüs, 
 Harita verisi için ilgili migration:
 
 `supabase/migrations/006_harita_dogrulanmis_koordinatlar.sql`
+
+
+## Serdivan sosyal tesisleri
+
+Nev+ sosyal tesis ekranının başlangıç kaynağı:
+
+- https://serdivan.bel.tr/tesislerimiz
+- https://serdivan.bel.tr/haberler/sehit-mehmet-oeztuerk-kuetuephanesi-cocuklara-oezel-atoelyeler
+- Serdivan Belediyesi 2026 Performans Programı
+
+Tesis çalışma saatleri doğrulanmadan sabit uygulama verisi olarak gösterilmez.
+
+## Serdivan Cepte tek üyelik
+
+Serdivan Belediyesi resmî dijital dönüşüm açıklamasında Serdivan Kültür Sanat platformunun Serdivan Cepte hesabıyla tek üyelik kullandığı belirtilmektedir. NevGenç SSO entegrasyonu bilgi işlem birimiyle aynı kurumsal kimlik akışına uyarlanacaktır.
+
+Kaynak: https://serdivan.bel.tr/haberler/serdivan-da-dijital-doenuesuem-teknolojiyle-daha-hizli-daha-gueclue-hizmet
