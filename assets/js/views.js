@@ -103,7 +103,7 @@ NevGenc.views = (() => {
   }
   async function nevPlus(){
     const data=NevGenc.nevPlusData||{modules:[],facilities:[]};
-    return `<section class="page nevplus-page"><div class="nevplus-hero"><div><span class="kicker">NEV+</span><h1>Öğrenci hayatı için kısa yollar</h1><p>Kampüs araçları, topluluk haberleri, günlük ihtiyaçlar ve Serdivan hizmetleri tek ekranda.</p></div><span class="nevplus-orb"><img src="assets/img/nevgenc-logo.png" alt="NevGenç logosu"><b>+</b></span></div><div class="nevplus-grid">${data.modules.map(nevPlusModuleCard).join('')}</div><div class="nevplus-note"><span>${icon.spark}</span><div><strong>Nev+ kademeli olarak büyüyor.</strong><p>Hazır olmayan servisler gerçek veri ve güvenlik kontrolleri tamamlandığında açılır; sahte veri gösterilmez.</p></div></div></section>`;
+    return `<section class="page nevplus-page"><div class="nevplus-hero"><div><span class="kicker">NEV+</span><h1>Öğrenci hayatı için kısa yollar</h1><p>Kampüs araçları, topluluk haberleri, günlük ihtiyaçlar ve Serdivan hizmetleri tek ekranda.</p></div><span class="nevplus-orb"><img src="assets/img/nevgenc-mark.png" alt="NevGenç logosu"><b>+</b></span></div><div class="nevplus-grid">${data.modules.map(nevPlusModuleCard).join('')}</div><div class="nevplus-note"><span>${icon.spark}</span><div><strong>Nev+ kademeli olarak büyüyor.</strong><p>Hazır olmayan servisler gerçek veri ve güvenlik kontrolleri tamamlandığında açılır; sahte veri gösterilmez.</p></div></div></section>`;
   }
 
   function communityNewsPostCard(post){
