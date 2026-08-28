@@ -1,3 +1,7 @@
+# NevGenç v15
+
+> Güncel sürüm: v15. Nev+ logo ve Oyun Odası ayrıştırma güncellemesi.
+
 # Serdivan NevGenç
 
 NevGenç; üniversite öğrencilerinin etkinlik, topluluk, kampüs hizmeti, fırsat ve şehir içi öğrenci servislerine tek bir mobil öncelikli web arayüzünden erişmesini amaçlayan öğrenci platformudur.

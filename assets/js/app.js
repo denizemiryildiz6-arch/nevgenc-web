@@ -1,10 +1,10 @@
 window.NevGenc = window.NevGenc || {};
 NevGenc.app = (()=>{
-  const routes={etkinlikler:NevGenc.views.eventsHome,anasayfa:NevGenc.views.eventsHome,topluluklar:NevGenc.views.communities,topluluk:NevGenc.views.communityDetail,nevplus:NevGenc.views.nevPlus,kesfet:NevGenc.views.nevPlus,'oyun-odasi':NevGenc.views.gameRoom,'topluluk-haberleri':NevGenc.views.communityNews,'sosyal-tesisler':NevGenc.views.socialFacilities,'ogrenci-dostu':NevGenc.views.studentFriendly,yakinda:NevGenc.views.comingSoon,firsatlar:NevGenc.views.opportunities,harita:NevGenc.views.mapView,profil:NevGenc.views.profile,kutuphane:NevGenc.views.libraryView,yemek:NevGenc.views.diningView,takvim:NevGenc.views.calendarView,yonetim:NevGenc.views.management};
+  const routes={etkinlikler:NevGenc.views.eventsHome,anasayfa:NevGenc.views.eventsHome,topluluklar:NevGenc.views.communities,topluluk:NevGenc.views.communityDetail,nevplus:NevGenc.views.nevPlus,kesfet:NevGenc.views.nevPlus,'oyun-odasi':NevGenc.views.gameRoom,'oyun':NevGenc.views.gameScreen,'topluluk-haberleri':NevGenc.views.communityNews,'sosyal-tesisler':NevGenc.views.socialFacilities,'ogrenci-dostu':NevGenc.views.studentFriendly,yakinda:NevGenc.views.comingSoon,firsatlar:NevGenc.views.opportunities,harita:NevGenc.views.mapView,profil:NevGenc.views.profile,kutuphane:NevGenc.views.libraryView,yemek:NevGenc.views.diningView,takvim:NevGenc.views.calendarView,yonetim:NevGenc.views.management};
   const view=document.getElementById('view');
   function routeParts(){return location.hash.replace(/^#\//,'').split('/').filter(Boolean)}
   function routeName(){const raw=(routeParts()[0]||NevGenc.config?.defaultRoute||'etkinlikler').toLowerCase();return routes[raw]?raw:'etkinlikler'}
-  function navRoute(r){if(r==='anasayfa')return 'etkinlikler';if(r==='topluluk')return 'topluluklar';if(['nevplus','kesfet','oyun-odasi','topluluk-haberleri','sosyal-tesisler','ogrenci-dostu','yakinda','kutuphane','yemek','takvim'].includes(r))return 'nevplus';return r}
+  function navRoute(r){if(r==='anasayfa')return 'etkinlikler';if(r==='topluluk')return 'topluluklar';if(['nevplus','kesfet','oyun-odasi','oyun','topluluk-haberleri','sosyal-tesisler','ogrenci-dostu','yakinda','kutuphane','yemek','takvim'].includes(r))return 'nevplus';return r}
   function toast(message,type='info'){const el=document.getElementById('toast');if(!el)return;el.textContent=message;el.dataset.type=type;el.classList.add('show');clearTimeout(el._timer);el._timer=setTimeout(()=>el.classList.remove('show'),3200)}
   function esc(value=''){return String(value).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
   function safeHref(value){const raw=String(value||'');if(raw.startsWith('#/'))return raw;try{const u=new URL(raw,location.origin);return u.protocol==='https:'?u.href:'#/etkinlikler'}catch{return '#/etkinlikler'}}
@@ -19,7 +19,7 @@ NevGenc.app = (()=>{
   async function bindRoute(route){
     bindFollowButtons();bindAnnouncementActions();
     if(route==='topluluklar')await bindCommunities();
-    if(route==='oyun-odasi')bindGameRoom();
+    if(route==='oyun-odasi'||route==='oyun')bindGameRoom();
     if(route==='harita')await bindMap();
     if(route==='kutuphane')bindLibrary();
     if(route==='profil')bindProfile();

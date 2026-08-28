@@ -1,0 +1,9 @@
+NevGenç v15 — Nev+ logo ve Oyun Odası düzenlemesi
+
+- Nev+ alt navigasyon rozetindeki N, NevGenç logosu ile değiştirildi.
+- Nev+ ana sayfasındaki büyük rozet NevGenç logosunu kullanıyor.
+- Oyun Odası artık oyun seçme ekranı olarak çalışıyor.
+- Sudoku ve Balon Patlat ayrı sayfalarda açılıyor.
+- Cache yenilemesi için statik dosya sürümü 15.0.0 yapıldı.
+
+Bu sürüm v14 kod tabanının devamıdır; v14 migration ve güvenlik dokümanları geçmiş sürüm referansı olarak projede tutulmuştur.

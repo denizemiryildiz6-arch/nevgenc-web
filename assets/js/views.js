@@ -103,7 +103,7 @@ NevGenc.views = (() => {
   }
   async function nevPlus(){
     const data=NevGenc.nevPlusData||{modules:[],facilities:[]};
-    return `<section class="page nevplus-page"><div class="nevplus-hero"><div><span class="kicker">NEV+</span><h1>Öğrenci hayatı için kısa yollar</h1><p>Kampüs araçları, topluluk haberleri, günlük ihtiyaçlar ve Serdivan hizmetleri tek ekranda.</p></div><span class="nevplus-orb">N<span>+</span></span></div><div class="nevplus-grid">${data.modules.map(nevPlusModuleCard).join('')}</div><div class="nevplus-note"><span>${icon.spark}</span><div><strong>Nev+ kademeli olarak büyüyor.</strong><p>Hazır olmayan servisler gerçek veri ve güvenlik kontrolleri tamamlandığında açılır; sahte veri gösterilmez.</p></div></div></section>`;
+    return `<section class="page nevplus-page"><div class="nevplus-hero"><div><span class="kicker">NEV+</span><h1>Öğrenci hayatı için kısa yollar</h1><p>Kampüs araçları, topluluk haberleri, günlük ihtiyaçlar ve Serdivan hizmetleri tek ekranda.</p></div><span class="nevplus-orb"><img src="assets/img/nevgenc-logo.png" alt="NevGenç logosu"><b>+</b></span></div><div class="nevplus-grid">${data.modules.map(nevPlusModuleCard).join('')}</div><div class="nevplus-note"><span>${icon.spark}</span><div><strong>Nev+ kademeli olarak büyüyor.</strong><p>Hazır olmayan servisler gerçek veri ve güvenlik kontrolleri tamamlandığında açılır; sahte veri gösterilmez.</p></div></div></section>`;
   }
 
   function communityNewsPostCard(post){
@@ -130,8 +130,23 @@ NevGenc.views = (() => {
   }
 
   function sudokuGridHtml(){return Array.from({length:81},(_,i)=>`<input class="sudoku-cell" inputmode="numeric" pattern="[1-9]" maxlength="1" data-sudoku-cell="${i}" aria-label="Sudoku hücresi ${i+1}">`).join('');}
+  const gameCatalog=[
+    {slug:'sudoku',kicker:'SUDOKU',title:'Sudoku',description:'Tek ekranda sade ve dikkat dağıtmayan günlük sudoku.',icon:icon.game},
+    {slug:'balon-patlat',kicker:'HIZLI OYUN',title:'Balon Patlat',description:'20 saniyelik refleks oyunu. Tıklayıp en yüksek skoru yap.',icon:icon.spark}
+  ];
+  function gameHubCard(game){
+    return `<article class="game-hub-card"><div class="game-title"><div><span class="kicker">${e(game.kicker)}</span><h2>${e(game.title)}</h2><p>${e(game.description)}</p></div><span>${game.icon}</span></div><a class="button primary" href="#/oyun/${e(game.slug)}">Oyunu aç</a></article>`;
+  }
   async function gameRoom(){
-    return `<section class="page game-room-page"><a class="back-link" href="#/nevplus">‹ Nev+</a><div class="page-heading"><span class="kicker">OYUN ODASI</span><h1>Kısa bir mola</h1><p>Oyunlar cihaz üzerinde çalışır; skor için kişisel veri toplanmaz.</p></div><div class="game-layout"><article class="game-card sudoku-card"><div class="game-title"><div><span class="kicker">SUDOKU</span><h2>Günün bulmacası</h2></div><span>${icon.game}</span></div><div class="sudoku-grid" id="sudoku-grid">${sudokuGridHtml()}</div><div class="game-actions"><button class="button primary" id="sudoku-new">Yeni oyun</button><button class="button" id="sudoku-check">Kontrol et</button></div><p id="sudoku-status" class="game-status">Yeni oyun oluşturuluyor…</p></article><article class="game-card balloon-card"><div class="game-title"><div><span class="kicker">HIZLI OYUN</span><h2>Balon Patlat</h2></div><span>${icon.spark}</span></div><div class="balloon-stage" id="balloon-stage"><button class="balloon" id="balloon" aria-label="Balonu patlat"></button></div><div class="balloon-score"><span>Skor <strong id="balloon-score">0</strong></span><span>Süre <strong id="balloon-time">20</strong></span></div><button class="button primary wide" id="balloon-start">20 saniyelik oyunu başlat</button></article></div></section>`;
+    return `<section class="page game-room-page"><a class="back-link" href="#/nevplus">‹ Nev+</a><div class="page-heading"><span class="kicker">OYUN ODASI</span><h1>Kısa bir mola</h1><p>Oyunlar tek tek açılır; hangisini seçersen yalnızca o oyun ekranı yüklenir.</p></div><div class="game-hub-grid">${gameCatalog.map(gameHubCard).join('')}</div></section>`;
+  }
+  async function gameScreen(parts=[]){
+    const slug=String(parts[0]||'').trim();
+    const game=gameCatalog.find(x=>x.slug===slug);
+    if(!game)return `<section class="page"><div class="empty-panel">İstediğin oyun bulunamadı.</div></section>`;
+    const switcher=`<div class="game-switcher">${gameCatalog.map(x=>`<a class="category-chip ${x.slug===slug?'active':''}" href="#/oyun/${e(x.slug)}">${e(x.title)}</a>`).join('')}</div>`;
+    if(slug==='sudoku')return `<section class="page game-room-page"><a class="back-link" href="#/oyun-odasi">‹ Oyun Odası</a><div class="page-heading"><span class="kicker">${e(game.kicker)}</span><h1>${e(game.title)}</h1><p>${e(game.description)}</p></div>${switcher}<div class="game-single-wrap"><article class="game-card sudoku-card"><div class="game-title"><div><span class="kicker">GÜNLÜK OYUN</span><h2>Bulmacayı çöz</h2></div><span>${icon.game}</span></div><div class="sudoku-grid" id="sudoku-grid">${sudokuGridHtml()}</div><div class="game-actions"><button class="button primary" id="sudoku-new">Yeni oyun</button><button class="button" id="sudoku-check">Kontrol et</button></div><p id="sudoku-status" class="game-status">Yeni oyun oluşturuluyor…</p></article></div></section>`;
+    if(slug==='balon-patlat')return `<section class="page game-room-page"><a class="back-link" href="#/oyun-odasi">‹ Oyun Odası</a><div class="page-heading"><span class="kicker">${e(game.kicker)}</span><h1>${e(game.title)}</h1><p>${e(game.description)}</p></div>${switcher}<div class="game-single-wrap"><article class="game-card balloon-card"><div class="game-title"><div><span class="kicker">20 SANİYE</span><h2>Hazır ol</h2></div><span>${icon.spark}</span></div><div class="balloon-stage" id="balloon-stage"><button class="balloon" id="balloon" aria-label="Balonu patlat"></button></div><div class="balloon-score"><span>Skor <strong id="balloon-score">0</strong></span><span>Süre <strong id="balloon-time">20</strong></span></div><button class="button primary wide" id="balloon-start">Oyunu başlat</button></article></div></section>`;
   }
 
   async function comingSoon(parts=[]){
@@ -204,5 +219,5 @@ NevGenc.views = (() => {
     </section>`;
   }
 
-  return {eventsHome,home:eventsHome,communities,communityDetail,nevPlus,communityNews,socialFacilities,studentFriendly,gameRoom,comingSoon,opportunities,mapView,transportDetail,libraryView,diningView,calendarView,profile,management,feedCard,communityCard};
+  return {eventsHome,home:eventsHome,communities,communityDetail,nevPlus,communityNews,socialFacilities,studentFriendly,gameRoom,gameScreen,comingSoon,opportunities,mapView,transportDetail,libraryView,diningView,calendarView,profile,management,feedCard,communityCard};
 })();

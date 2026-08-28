@@ -2,8 +2,8 @@ window.NevGenc = window.NevGenc || {};
 NevGenc.config = {
   defaultRoute: 'etkinlikler',
   supabase: {
-    url: 'https://kudrmtszrxyaweyhutzb.supabase.co',
-    anonKey: 'sb_publishable_sLet470-Q9ZeLpnqdp1WaQ_AuYvAneh'
+    url: 'https://PROJECT_ID.supabase.co',
+    anonKey: 'YOUR_PUBLISHABLE_KEY'
   },
   sources: {
     communities: 'https://topluluk.sakarya.edu.tr/',
