@@ -1,0 +1,14 @@
+NevGenç v17.1 — Production Security + UX Hardening
+
+1) Repo dosyalarını güncelleyin. Canlı config.js dosyanızı update paketi değiştirmez.
+2) Supabase SQL Editor'da supabase/migrations/013_production_security_ux.sql dosyasını bir kez çalıştırın.
+3) Edge Functions yeniden deploy edilir:
+   npx supabase@latest functions deploy content-admin --use-api
+   npx supabase@latest functions deploy role-admin --use-api
+   npx supabase@latest functions deploy account-delete --use-api
+4) Production secret'ları:
+   npx supabase@latest secrets set ALLOWED_ORIGINS=https://denizemiryildiz6-arch.github.io
+   npx supabase@latest secrets set REQUIRE_ADMIN_AAL2=true
+5) Supabase Dashboard'da CAPTCHA/bot koruması, Auth rate limits, production redirect allowlist ve özel SMTP ayarları kontrol edilmelidir.
+
+Yeni UX: MFA güvenlik merkezi, AAL2 yönetici uyarıları, güvenli onay modalları, audit sekmesi, parola yenileme, güvenli dosya işleme, offline uyarısı ve erişilebilir modal/klavye davranışları.

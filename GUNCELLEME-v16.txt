@@ -1,0 +1,19 @@
+NevGenç v16 — Güvenlik Sertleştirmesi
+
+Bu sürüm v15.1 tasarım/oyun yapısını korur ve üretim güvenliğine odaklanır.
+
+Uygulanacak SQL:
+  supabase/migrations/012_security_hardening.sql
+
+Yeniden deploy edilecek Edge Functions:
+  content-admin
+  role-admin
+  account-delete
+
+Production secret:
+  ALLOWED_ORIGINS=https://denizemiryildiz6-arch.github.io
+
+MFA tamamlandıktan sonra önerilen secret:
+  REQUIRE_ADMIN_AAL2=true
+
+Ayrıntılar: docs/GUVENLIK-v16.md

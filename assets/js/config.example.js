@@ -3,7 +3,11 @@ NevGenc.config = {
   defaultRoute: 'etkinlikler',
   supabase: {
     url: 'https://PROJECT_ID.supabase.co',
-    anonKey: 'YOUR_PUBLISHABLE_KEY'
+    publishableKey: 'YOUR_PUBLISHABLE_KEY',
+    anonKey: 'YOUR_PUBLISHABLE_KEY' // geriye dönük uyumluluk; secret/service_role KULLANILMAZ
+  },
+  security: {
+    accountDeletionEnabled: true
   },
   sources: {
     communities: 'https://topluluk.sakarya.edu.tr/',

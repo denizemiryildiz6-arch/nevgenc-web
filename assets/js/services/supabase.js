@@ -3,14 +3,15 @@ NevGenc.supabase = (() => {
   let client = null;
   function isConfigured(){
     const cfg=NevGenc.config?.supabase||{};
-    return Boolean(cfg.url && cfg.anonKey && window.supabase?.createClient);
+    return Boolean(cfg.url && (cfg.publishableKey||cfg.anonKey) && window.supabase?.createClient);
   }
   function getClient(){
     if(!isConfigured()) return null;
     if(!client){
-      client=window.supabase.createClient(NevGenc.config.supabase.url,NevGenc.config.supabase.anonKey,{
-        auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce'},
-        global:{headers:{'x-client-info':'nevgenc-web/13.0.0'}}
+      const key=NevGenc.config.supabase.publishableKey||NevGenc.config.supabase.anonKey;
+      client=window.supabase.createClient(NevGenc.config.supabase.url,key,{
+        auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce',storageKey:'nevgenc-auth-v1'},
+        global:{headers:{'x-client-info':'nevgenc-web/17.1.0'}}
       });
     }
     return client;

@@ -1,0 +1,10 @@
+project_id = "nevgenc-web"
+
+[functions.content-admin]
+verify_jwt = true
+
+[functions.role-admin]
+verify_jwt = true
+
+[functions.account-delete]
+verify_jwt = true

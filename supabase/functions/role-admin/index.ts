@@ -1,16 +1,18 @@
-import { HttpError, assertSameOrigin, corsHeaders, json } from '../_shared/http.ts'
-import { audit, findUserByEmail, isCommunityAdmin, isPlatformAdmin, requireActor } from '../_shared/auth.ts'
+import { HttpError, assertSameOrigin, corsHeaders, json, readJsonBody } from '../_shared/http.ts'
+import { audit, enforceRateLimit, findUserByEmail, isCommunityAdmin, isPlatformAdmin, requireActor, requireAal2WhenEnabled } from '../_shared/auth.ts'
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders(req) })
+  if (req.method === 'OPTIONS') { try { assertSameOrigin(req); return new Response('ok', { headers: corsHeaders(req) }) } catch { return new Response(null,{status:403}) } }
   if (req.method !== 'POST') return json(req, { error: 'Yalnızca POST desteklenir.' }, 405)
 
   try {
     assertSameOrigin(req)
-    const { actor, admin } = await requireActor(req)
-    const body = await req.json().catch(() => ({})) as Record<string, unknown>
+    const { actor, admin, assuranceLevel } = await requireActor(req)
+    const body = await readJsonBody(req, 16_384)
     const operation = String(body.operation || '')
     const actorIsPlatform = await isPlatformAdmin(admin, actor.id)
+    await enforceRateLimit(admin, actor.id, `role-admin:${operation}`, 10, 600)
+    requireAal2WhenEnabled(assuranceLevel)
 
     if (operation === 'assign_community_admin') {
       const slug = String(body.communitySlug || '').trim()
@@ -51,6 +53,7 @@ Deno.serve(async (req) => {
     if (operation === 'assign_organization_editor') {
       if (!actorIsPlatform) throw new HttpError(403, 'Bu işlem yalnızca platform yöneticilerine açıktır.')
       const orgSlug = String(body.organizationSlug || '').trim()
+      if (!/^[a-z0-9-]{2,100}$/.test(orgSlug)) throw new HttpError(400, 'Geçersiz kurum.')
       const { data: organization } = await admin.from('organizations').select('id,name').eq('slug', orgSlug).eq('is_active', true).maybeSingle()
       if (!organization) throw new HttpError(404, 'Kurum bulunamadı.')
       const target = await findUserByEmail(admin, String(body.targetEmail || ''))
@@ -63,7 +66,8 @@ Deno.serve(async (req) => {
     throw new HttpError(400, 'Desteklenmeyen işlem.')
   } catch (error) {
     const status = error instanceof HttpError ? error.status : 500
-    if (status >= 500) console.error(error)
-    return json(req, { error: error instanceof Error ? error.message : 'İşlem tamamlanamadı.' }, status)
+    if (status >= 500) console.error(JSON.stringify({event:'role_admin_failure',status}))
+    const message=status>=500?'Sunucu işlemi tamamlayamadı.':(error instanceof Error?error.message:'İşlem tamamlanamadı.')
+    return json(req, { error: message }, status)
   }
 })

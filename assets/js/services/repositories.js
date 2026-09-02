@@ -7,7 +7,7 @@ NevGenc.repositories = (() => {
   async function fromTable(table,queryBuilder,fallback=[]){
     const c=NevGenc.supabase.getClient();if(!c)return official(fallback);
     try{let q=c.from(table).select('*');if(queryBuilder)q=queryBuilder(q);const {data,error}=await q;if(error)throw error;return data?.length?{data,source:'supabase'}:official(fallback)}
-    catch(err){console.warn(`[NevGenç] ${table} için doğrulanmış yedek veri kullanılıyor`,err);return official(fallback)}
+    catch(_err){return official(fallback)}
   }
   function normalizeCommunity(x){return {...x,dbId:x.id||null,id:x.slug||x.id,slug:x.slug||x.id,socialUrl:x.instagram_url||x.x_url||x.linkedin_url||x.socialUrl||null,instagramUrl:x.instagram_url||x.instagramUrl||null,xUrl:x.x_url||x.xUrl||null,sourceUrl:x.source_url||x.sourceUrl||NevGenc.config.sources.communities,verifiedAt:x.verified_at||x.verifiedAt||null}}
   function normalizeLocation(x){const key=x.slug||x.id,fb=fallbackLocation(key);return {...fb,...x,id:key,dbId:x.id||null,lat:x.latitude??x.lat??fb?.lat??null,lng:x.longitude??x.lng??fb?.lng??null,sourceUrl:x.source_url||x.sourceUrl||fb?.sourceUrl||null,verifiedAt:x.verified_at||x.verifiedAt||fb?.verifiedAt||null}}
@@ -17,20 +17,21 @@ NevGenc.repositories = (() => {
   function normalizeAnnouncement(x){const community=x.communities||x.community||null;return {...x,dbId:x.id||null,id:x.slug||x.id,slug:x.slug||x.id,kind:x.kind||x.type||'Duyuru',sourceType:x.source_type||x.sourceType||'university',sourceName:x.source_name||x.sourceName||community?.name||'NevGenç',title:x.title||'',summary:x.summary||'',publishedAt:x.published_at||x.publishedAt||null,eventStart:x.event_start||x.eventStart||null,eventEnd:x.event_end||x.eventEnd||null,eventRangeText:x.event_range_text||x.eventRangeText||null,location:x.location||null,isEvent:x.is_event??x.isEvent??Boolean(x.event_start||x.eventStart),isPinned:x.is_pinned??x.isPinned??false,deadlineText:x.deadline_text||x.deadlineText||null,url:x.url||x.source_url||x.sourceUrl||null,sourceUrl:x.source_url||x.sourceUrl||x.url||null,communitySlug:community?.slug||x.community_slug||x.communitySlug||null,communityName:community?.name||null,verifiedAt:x.verified_at||x.verifiedAt||null}}
 
   async function requireUser(){const user=await NevGenc.supabase.currentUser();if(!user){NevGenc.session.showAuth({tab:'signin'});throw new Error('Bu işlem için giriş yapmalısın.')}return user}
+  async function requirePrivilegedAal2(){const state=await NevGenc.session.securitySummary();if(state.currentLevel!=='aal2'){if(state.mfaEnrolled)NevGenc.session.beginMfaChallenge().catch(()=>{});else NevGenc.session.beginMfaEnrollment().catch(()=>{});throw new Error('Yönetici işlemi için iki aşamalı doğrulama gerekli.')}}
   async function communities(){const r=await fromTable('communities',q=>q.eq('is_active',true).order('name'),seed.communities);return {data:r.data.map(normalizeCommunity),source:r.source}}
   async function partners(){const r=await fromTable('partners',q=>q.eq('is_active',true).order('name'),seed.partners);return {data:r.data.map(normalizePartner),source:r.source}}
   async function locations(){
     const c=NevGenc.supabase.getClient();if(!c)return official(seed.locations);
-    try{const [a,b]=await Promise.all([c.from('map_locations').select('*').eq('is_active',true).order('name'),c.from('partners').select('*').eq('is_active',true).order('name')]);if(a.error)throw a.error;if(b.error)throw b.error;const merged=[...(a.data||[]).map(normalizeLocation),...(b.data||[]).map(normalizePartner)];return merged.length?{data:merged,source:'supabase'}:official(seed.locations)}catch(err){console.warn('[NevGenç] konum yedeği kullanılıyor',err);return official(seed.locations)}
+    try{const [a,b]=await Promise.all([c.from('map_locations').select('*').eq('is_active',true).order('name'),c.from('partners').select('*').eq('is_active',true).order('name')]);if(a.error)throw a.error;if(b.error)throw b.error;const merged=[...(a.data||[]).map(normalizeLocation),...(b.data||[]).map(normalizePartner)];return merged.length?{data:merged,source:'supabase'}:official(seed.locations)}catch(_err){return official(seed.locations)}
   }
   async function transportLines(){const r=await fromTable('transport_lines',q=>q.eq('is_active',true).order('code'),seed.transportLines);return {data:r.data.map(normalizeLine),source:r.source}}
   async function transportLineDetail(code){
     const fb=NevGenc.officialData.transportLines.find(l=>l.code===code),c=NevGenc.supabase.getClient();if(!c||!fb)return fb?{data:normalizeLine(fb),source:'official'}:null;
-    try{const {data:line,error}=await c.from('transport_lines').select('*').eq('code',code).maybeSingle();if(error||!line)throw error||new Error('Hat bulunamadı');const rows=await c.from('transport_line_stops').select('stop_order,direction,transport_stops(name,latitude,longitude,source_url)').eq('line_id',line.id).eq('direction','outbound').order('stop_order');if(rows.error)throw rows.error;return {data:{...normalizeLine(line),stops:(rows.data||[]).map(r=>({name:r.transport_stops?.name||'',lat:r.transport_stops?.latitude,lng:r.transport_stops?.longitude,sourceUrl:r.transport_stops?.source_url}))},source:'supabase'}}catch(err){console.warn('[NevGenç] hat detayında yedek kullanılıyor',err);return fb?{data:normalizeLine(fb),source:'official'}:null}
+    try{const {data:line,error}=await c.from('transport_lines').select('*').eq('code',code).maybeSingle();if(error||!line)throw error||new Error('Hat bulunamadı');const rows=await c.from('transport_line_stops').select('stop_order,direction,transport_stops(name,latitude,longitude,source_url)').eq('line_id',line.id).eq('direction','outbound').order('stop_order');if(rows.error)throw rows.error;return {data:{...normalizeLine(line),stops:(rows.data||[]).map(r=>({name:r.transport_stops?.name||'',lat:r.transport_stops?.latitude,lng:r.transport_stops?.longitude,sourceUrl:r.transport_stops?.source_url}))},source:'supabase'}}catch(_err){return fb?{data:normalizeLine(fb),source:'official'}:null}
   }
   async function announcements(){
     const fb=(NevGenc.announcementData||[]).map(normalizeAnnouncement),c=NevGenc.supabase.getClient();if(!c)return official(fb);
-    try{const {data,error}=await c.from('announcements').select('*,communities(slug,name)').eq('is_published',true).order('is_pinned',{ascending:false}).order('published_at',{ascending:false,nullsFirst:false}).limit(100);if(error)throw error;return data?.length?{data:data.map(normalizeAnnouncement),source:'supabase'}:official(fb)}catch(err){console.warn('[NevGenç] duyuru yedeği kullanılıyor',err);return official(fb)}
+    try{const {data,error}=await c.from('announcements').select('*,communities(slug,name)').eq('is_published',true).order('is_pinned',{ascending:false}).order('published_at',{ascending:false,nullsFirst:false}).limit(100);if(error)throw error;return data?.length?{data:data.map(normalizeAnnouncement),source:'supabase'}:official(fb)}catch(_err){return official(fb)}
   }
   async function opportunities(){const fb=NevGenc.opportunityData||[];return fromTable('opportunities',q=>q.eq('is_published',true).order('published_at',{ascending:false}),fb)}
   async function organizations(){return fromTable('organizations',q=>q.eq('is_active',true).order('name'),[])}
@@ -95,7 +96,7 @@ NevGenc.repositories = (() => {
     const c=NevGenc.supabase.getClient();if(!c)return {data:[],source:'official'};
     const {data:community,error:ce}=await c.from('communities').select('id').eq('slug',String(slug||'')).maybeSingle();if(ce||!community)return {data:[],source:'supabase'};
     const {data,error}=await c.from('community_admins_public').select('community_id,display_name,role_title,public_email,avatar_url,sort_order').eq('community_id',community.id).order('sort_order').order('display_name');
-    if(error){console.warn('[NevGenç] yönetici kartları yüklenemedi',error);return {data:[],source:'supabase'}}
+    if(error){return {data:[],source:'supabase'}}
     return {data:(data||[]).map(x=>({communityId:x.community_id,displayName:x.display_name,roleTitle:x.role_title,publicEmail:x.public_email,avatarUrl:x.avatar_url,sortOrder:x.sort_order})),source:'supabase'};
   }
 
@@ -103,7 +104,7 @@ NevGenc.repositories = (() => {
     const c=NevGenc.supabase.getClient();if(!c)return {data:[],source:'official'};
     const {data:community,error:ce}=await c.from('communities').select('id').eq('slug',String(slug||'')).maybeSingle();if(ce||!community)return {data:[],source:'supabase'};
     const {data,error}=await c.from('community_posts_public').select('id,community_id,body,image_path,published_at,author_name,author_role').eq('community_id',community.id).order('published_at',{ascending:false}).limit(100);
-    if(error){console.warn('[NevGenç] topluluk gönderileri yüklenemedi',error);return {data:[],source:'supabase'}}
+    if(error){return {data:[],source:'supabase'}}
     return {data:(data||[]).map(x=>({...x,communityId:x.community_id,body:x.body||'',imagePath:x.image_path||null,publishedAt:x.published_at,authorName:x.author_name||'Topluluk Yönetimi',authorRole:x.author_role||'Yönetici',imageUrl:x.image_path?c.storage.from('community-posts').getPublicUrl(x.image_path).data.publicUrl:null})),source:'supabase'};
   }
 
@@ -117,36 +118,51 @@ NevGenc.repositories = (() => {
       if(posts.error)throw posts.error;if(communitiesResult.error)throw communitiesResult.error;
       const byId=new Map((communitiesResult.data||[]).map(x=>[x.id,x]));
       return {data:(posts.data||[]).map(x=>{const community=byId.get(x.community_id)||{};return {...x,communityId:x.community_id,communitySlug:community.slug||'',communityName:community.name||'Öğrenci Topluluğu',communityCategory:community.category||'',body:x.body||'',imagePath:x.image_path||null,publishedAt:x.published_at,authorName:x.author_name||'Topluluk Yönetimi',authorRole:x.author_role||'Yönetici',imageUrl:x.image_path?c.storage.from('community-posts').getPublicUrl(x.image_path).data.publicUrl:null}}),source:'supabase'};
-    }catch(err){console.warn('[NevGenç] topluluk haber akışı yüklenemedi',err);return {data:[],source:'supabase'}}
+    }catch(err){void err;return {data:[],source:'supabase'}}
   }
 
-  function validatePostImage(file){
+  function imageMagicType(bytes){
+    if(bytes.length>=3&&bytes[0]===0xff&&bytes[1]===0xd8&&bytes[2]===0xff)return 'image/jpeg';
+    if(bytes.length>=8&&bytes[0]===0x89&&bytes[1]===0x50&&bytes[2]===0x4e&&bytes[3]===0x47&&bytes[4]===0x0d&&bytes[5]===0x0a&&bytes[6]===0x1a&&bytes[7]===0x0a)return 'image/png';
+    if(bytes.length>=12&&String.fromCharCode(...bytes.slice(0,4))==='RIFF'&&String.fromCharCode(...bytes.slice(8,12))==='WEBP')return 'image/webp';
+    return null;
+  }
+  async function sanitizePostImage(file){
     if(!file)return null;
-    const allowed={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'};
-    if(!allowed[file.type])throw new Error('Görsel yalnızca JPG, PNG veya WEBP olabilir.');
+    const allowed=new Set(['image/jpeg','image/png','image/webp']);
+    if(!allowed.has(file.type))throw new Error('Görsel yalnızca JPG, PNG veya WEBP olabilir.');
     if(file.size>5*1024*1024)throw new Error('Görsel en fazla 5 MB olabilir.');
-    return allowed[file.type];
+    const header=new Uint8Array(await file.slice(0,16).arrayBuffer()),magic=imageMagicType(header);
+    if(!magic||magic!==file.type)throw new Error('Görsel dosyasının içeriği geçerli görünmüyor.');
+    let bitmap;try{bitmap=await createImageBitmap(file)}catch{throw new Error('Görsel açılamadı veya bozuk.');}
+    const pixels=bitmap.width*bitmap.height;if(bitmap.width<32||bitmap.height<32||pixels>24_000_000){bitmap.close();throw new Error('Görsel boyutları güvenli sınırların dışında.');}
+    const maxSide=2200,scale=Math.min(1,maxSide/Math.max(bitmap.width,bitmap.height)),w=Math.max(1,Math.round(bitmap.width*scale)),h=Math.max(1,Math.round(bitmap.height*scale));
+    const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d',{alpha:true});if(!ctx){bitmap.close();throw new Error('Görsel işlenemedi.');}
+    ctx.drawImage(bitmap,0,0,w,h);bitmap.close();
+    const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/webp',0.9));canvas.width=1;canvas.height=1;if(!blob)throw new Error('Görsel güvenli biçime dönüştürülemedi.');
+    if(blob.size>5*1024*1024)throw new Error('İşlenmiş görsel 5 MB sınırını aşıyor.');
+    return new File([blob],`${crypto.randomUUID()}.webp`,{type:'image/webp',lastModified:Date.now()});
   }
 
   async function createCommunityPost({communitySlug,body,imageFile}){
-    const user=await requireUser(),c=NevGenc.supabase.getClient();
+    const user=await requireUser();await requirePrivilegedAal2();const c=NevGenc.supabase.getClient();
     const text=String(body||'').trim();if(text.length>5000)throw new Error('Gönderi metni en fazla 5000 karakter olabilir.');
-    const ext=validatePostImage(imageFile);if(!text&&!imageFile)throw new Error('Metin veya görsel eklemelisin.');
+    const safeImage=imageFile?await sanitizePostImage(imageFile):null;if(!text&&!safeImage)throw new Error('Metin veya görsel eklemelisin.');
     const {data:community,error:ce}=await c.from('communities').select('id').eq('slug',String(communitySlug||'')).eq('is_active',true).maybeSingle();if(ce||!community)throw ce||new Error('Topluluk bulunamadı.');
     let imagePath=null;
-    if(imageFile){
-      imagePath=`${community.id}/${crypto.randomUUID()}.${ext}`;
-      const uploaded=await c.storage.from('community-posts').upload(imagePath,imageFile,{cacheControl:'3600',contentType:imageFile.type,upsert:false});
+    if(safeImage){
+      imagePath=`${community.id}/${crypto.randomUUID()}.webp`;
+      const uploaded=await c.storage.from('community-posts').upload(imagePath,safeImage,{cacheControl:'3600',contentType:'image/webp',upsert:false});
       if(uploaded.error)throw new Error('Görsel yüklenemedi.');
     }
     const {data,error}=await c.from('community_posts').insert({community_id:community.id,author_id:user.id,body:text||null,image_path:imagePath,is_published:true}).select('id').single();
-    if(error){if(imagePath)await c.storage.from('community-posts').remove([imagePath]).catch(()=>{});throw error}
+    if(error){if(imagePath)await c.storage.from('community-posts').remove([imagePath]).catch(()=>{});throw new Error('Gönderi yayınlanamadı.')}
     return {id:data.id};
   }
 
   async function deleteCommunityPost(id,imagePath=null){
-    await requireUser();const c=NevGenc.supabase.getClient();
-    const {error}=await c.from('community_posts').delete().eq('id',id);if(error)throw error;
+    await requireUser();await requirePrivilegedAal2();const c=NevGenc.supabase.getClient();
+    const {error}=await c.from('community_posts').delete().eq('id',id);if(error)throw new Error('Gönderi yayından kaldırılamadı.');
     if(imagePath)await c.storage.from('community-posts').remove([imagePath]).catch(()=>{});
     return {ok:true};
   }
@@ -167,13 +183,13 @@ NevGenc.repositories = (() => {
   }
 
   async function updateOwnCommunityAdminProfile({communitySlug,displayName,roleTitle,publicEmail}){
-    const user=await requireUser(),c=NevGenc.supabase.getClient();
+    const user=await requireUser();await requirePrivilegedAal2();const c=NevGenc.supabase.getClient();
     const name=String(displayName||'').trim().replace(/\s+/g,' '),title=String(roleTitle||'').trim().replace(/\s+/g,' '),email=String(publicEmail||'').trim().toLowerCase();
     if(name.length<2||name.length>80)throw new Error('Görünen ad 2-80 karakter olmalıdır.');
     if(title.length<2||title.length>80)throw new Error('Görev adı 2-80 karakter olmalıdır.');
     if(email&&!/^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,63}$/.test(email))throw new Error('İletişim e-postası geçerli değil.');
     const {data:community,error:ce}=await c.from('communities').select('id').eq('slug',String(communitySlug||'')).maybeSingle();if(ce||!community)throw ce||new Error('Topluluk bulunamadı.');
-    const {error}=await c.from('community_admin_public_profiles').upsert({community_id:community.id,user_id:user.id,display_name:name,role_title:title,public_email:email||null,updated_at:new Date().toISOString()},{onConflict:'community_id,user_id'});if(error)throw error;
+    const {error}=await c.from('community_admin_public_profiles').upsert({community_id:community.id,user_id:user.id,display_name:name,role_title:title,public_email:email||null,updated_at:new Date().toISOString()},{onConflict:'community_id,user_id'});if(error)throw new Error('Yönetici kartı güncellenemedi.');
     return {ok:true};
   }
 
@@ -206,6 +222,13 @@ NevGenc.repositories = (() => {
   async function removeCommunityAdmin(communitySlug,email){return invokeProtectedFunction('role-admin',{operation:'remove_community_admin',communitySlug,targetEmail:String(email||'').trim().toLowerCase()})}
   async function assignPlatformAdmin(email){return invokeProtectedFunction('role-admin',{operation:'assign_platform_admin',targetEmail:String(email||'').trim().toLowerCase()})}
   async function assignOrganizationEditor(organizationSlug,email){return invokeProtectedFunction('role-admin',{operation:'assign_organization_editor',organizationSlug,targetEmail:String(email||'').trim().toLowerCase()})}
+  async function deleteOwnAccount(confirmation,emailConfirmation){return invokeProtectedFunction('account-delete',{confirmation:String(confirmation||''),emailConfirmation:String(emailConfirmation||'').trim().toLowerCase()})}
+  async function auditLog(limit=50){
+    await requireUser();const c=NevGenc.supabase.getClient();const safeLimit=Math.max(1,Math.min(Number(limit)||50,100));
+    const {data,error}=await c.from('content_audit_log').select('id,actor_id,action,entity_type,entity_id,metadata,created_at').order('created_at',{ascending:false}).limit(safeLimit);
+    if(error)throw new Error('Güvenlik kayıtları alınamadı.');
+    return {data:(data||[]).map(x=>({id:x.id,actorId:x.actor_id||null,action:x.action,entityType:x.entity_type,entityId:x.entity_id||null,metadata:x.metadata||{},createdAt:x.created_at})),source:'supabase'};
+  }
 
-  return {communities,communityBySlug,communityPublicAdmins,communityPosts,communityPostsFeed,createCommunityPost,deleteCommunityPost,updateCommunityProfile,updateOrganizationProfile,ownCommunityAdminProfile,updateOwnCommunityAdminProfile,partners,locations,transportLines,transportLineDetail,announcements,opportunities,organizations,municipalFacilities,followedCommunitySlugs,toggleCommunityFollow,announcementResponses,toggleAnnouncementResponse,communityFollowCounts,librarySpaces,libraryReservations,createLibraryReservation,cancelLibraryReservation,diningMenu,diningMenusRange,accountContext,createAnnouncement,unpublishAnnouncement,assignCommunityAdmin,removeCommunityAdmin,assignPlatformAdmin,assignOrganizationEditor,profile:accountContext};
+  return {communities,communityBySlug,communityPublicAdmins,communityPosts,communityPostsFeed,createCommunityPost,deleteCommunityPost,updateCommunityProfile,updateOrganizationProfile,ownCommunityAdminProfile,updateOwnCommunityAdminProfile,partners,locations,transportLines,transportLineDetail,announcements,opportunities,organizations,municipalFacilities,followedCommunitySlugs,toggleCommunityFollow,announcementResponses,toggleAnnouncementResponse,communityFollowCounts,librarySpaces,libraryReservations,createLibraryReservation,cancelLibraryReservation,diningMenu,diningMenusRange,accountContext,createAnnouncement,unpublishAnnouncement,assignCommunityAdmin,removeCommunityAdmin,assignPlatformAdmin,assignOrganizationEditor,deleteOwnAccount,auditLog,profile:accountContext};
 })();

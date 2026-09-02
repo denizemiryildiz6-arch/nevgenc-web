@@ -1,5 +1,5 @@
-import { HttpError, assertSameOrigin, corsHeaders, json } from '../_shared/http.ts'
-import { audit, isCommunityAdmin, isOrganizationEditor, isPlatformAdmin, requireActor } from '../_shared/auth.ts'
+import { HttpError, assertSameOrigin, corsHeaders, json, readJsonBody } from '../_shared/http.ts'
+import { audit, enforceRateLimit, isCommunityAdmin, isOrganizationEditor, isPlatformAdmin, requireActor, requireAal2WhenEnabled } from '../_shared/auth.ts'
 
 const kinds = new Set(['Duyuru', 'Etkinlik', 'Haber', 'Topluluk'])
 
@@ -31,15 +31,17 @@ function optionalText(value: unknown, max: number) {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders(req) })
+  if (req.method === 'OPTIONS') { try { assertSameOrigin(req); return new Response('ok', { headers: corsHeaders(req) }) } catch { return new Response(null,{status:403}) } }
   if (req.method !== 'POST') return json(req, { error: 'Yalnızca POST desteklenir.' }, 405)
 
   try {
     assertSameOrigin(req)
-    const { actor, admin } = await requireActor(req)
-    const body = await req.json().catch(() => ({})) as Record<string, unknown>
+    const { actor, admin, assuranceLevel } = await requireActor(req)
+    const body = await readJsonBody(req)
     const operation = String(body.operation || 'create')
     const platform = await isPlatformAdmin(admin, actor.id)
+    await enforceRateLimit(admin, actor.id, `content-admin:${operation}`, operation==='create'?20:40, 600)
+    requireAal2WhenEnabled(assuranceLevel)
 
     if (operation === 'create') {
       const scopeType = String(body.scopeType || '')
@@ -143,7 +145,8 @@ Deno.serve(async (req) => {
     throw new HttpError(400, 'Desteklenmeyen işlem.')
   } catch (error) {
     const status = error instanceof HttpError ? error.status : 500
-    if (status >= 500) console.error(error)
-    return json(req, { error: error instanceof Error ? error.message : 'İşlem tamamlanamadı.' }, status)
+    if (status >= 500) console.error(JSON.stringify({event:'content_admin_failure',status}))
+    const message=status>=500?'Sunucu işlemi tamamlayamadı.':(error instanceof Error?error.message:'İşlem tamamlanamadı.')
+    return json(req, { error: message }, status)
   }
 })

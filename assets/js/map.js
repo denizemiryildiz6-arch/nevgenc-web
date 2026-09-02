@@ -221,7 +221,7 @@ NevGenc.map = (() => {
       try{
         const layer=L.geoJSON(geo,{style:{weight:5,opacity:.82}}).addTo(map);
         routeLayers.push(layer);
-      }catch(err){console.warn('[NevGenç] güzergâh geometrisi çizilemedi',err)}
+      }catch(_err){console.warn('[NevGenç] route-render-failed')}
     }
 
     const stops=enrichedStops(line);

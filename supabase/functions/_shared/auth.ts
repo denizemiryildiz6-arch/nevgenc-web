@@ -1,9 +1,16 @@
-import { createClient, type SupabaseClient, type User } from 'npm:@supabase/supabase-js@2'
+import { createClient, type SupabaseClient, type User } from 'npm:@supabase/supabase-js@2.112.4'
 import { HttpError } from './http.ts'
 
-export type Context = {
-  actor: User
-  admin: SupabaseClient
+export type Context = { actor: User; admin: SupabaseClient; token: string; assuranceLevel: string | null }
+
+function tokenPayload(token: string): Record<string,unknown> {
+  try {
+    const part=token.split('.')[1]
+    if(!part) return {}
+    const normalized=part.replace(/-/g,'+').replace(/_/g,'/')
+    const padded=normalized + '='.repeat((4-normalized.length%4)%4)
+    return JSON.parse(atob(padded))
+  } catch { return {} }
 }
 
 export async function requireActor(req: Request): Promise<Context> {
@@ -13,7 +20,7 @@ export async function requireActor(req: Request): Promise<Context> {
 
   const auth = req.headers.get('authorization') || ''
   const token = auth.replace(/^Bearer\s+/i, '').trim()
-  if (!token) throw new HttpError(401, 'Oturum gerekli.')
+  if (!token || token.length > 8192) throw new HttpError(401, 'Oturum gerekli.')
 
   const admin = createClient(url, serviceKey, {
     auth: { persistSession: false, autoRefreshToken: false },
@@ -22,7 +29,33 @@ export async function requireActor(req: Request): Promise<Context> {
 
   const { data, error } = await admin.auth.getUser(token)
   if (error || !data.user) throw new HttpError(401, 'Oturum doğrulanamadı.')
-  return { actor: data.user, admin }
+  const payload=tokenPayload(token)
+  return { actor: data.user, admin, token, assuranceLevel: typeof payload.aal==='string'?payload.aal:null }
+}
+
+export async function enforceRateLimit(admin: SupabaseClient, userId: string, scope: string, limit: number, windowSeconds: number) {
+  const { data, error } = await admin.rpc('security_rate_limit_check', {
+    p_user_id:userId, p_scope:scope, p_limit:limit, p_window_seconds:windowSeconds,
+  })
+  if (error) throw new HttpError(503, 'Güvenlik kontrolü geçici olarak kullanılamıyor.')
+  if (data !== true) throw new HttpError(429, 'Çok fazla işlem denendi. Bir süre sonra tekrar dene.')
+}
+
+export function requireAal2WhenEnabled(assuranceLevel: string | null) {
+  const configured=(Deno.env.get('REQUIRE_ADMIN_AAL2') ?? 'true').toLowerCase()
+  if (configured !== 'false' && assuranceLevel !== 'aal2') {
+    throw new HttpError(403, 'Bu yönetici işlemi için iki aşamalı doğrulama gerekli.')
+  }
+}
+
+export async function isPrivilegedActor(admin: SupabaseClient, userId: string) {
+  if (await isPlatformAdmin(admin,userId)) return true
+  const [community,organization]=await Promise.all([
+    admin.from('community_admins').select('user_id',{count:'exact',head:true}).eq('user_id',userId),
+    admin.from('organization_editors').select('user_id',{count:'exact',head:true}).eq('user_id',userId),
+  ])
+  if(community.error||organization.error) throw new HttpError(500,'Rol bilgisi doğrulanamadı.')
+  return (community.count||0)>0 || (organization.count||0)>0
 }
 
 export async function isPlatformAdmin(admin: SupabaseClient, userId: string) {
@@ -57,12 +90,7 @@ export async function findUserByEmail(admin: SupabaseClient, email: string) {
 }
 
 export async function audit(admin: SupabaseClient, actorId: string, action: string, entityType: string, entityId?: string | null, metadata: Record<string, unknown> = {}) {
-  const { error } = await admin.from('content_audit_log').insert({
-    actor_id: actorId,
-    action,
-    entity_type: entityType,
-    entity_id: entityId || null,
-    metadata,
-  })
-  if (error) console.error('audit-log-failed', error.message)
+  const safeMetadata=Object.fromEntries(Object.entries(metadata).filter(([k])=>!/(token|password|secret|email)/i.test(k)))
+  const { error } = await admin.from('content_audit_log').insert({ actor_id: actorId, action, entity_type: entityType, entity_id: entityId || null, metadata:safeMetadata })
+  if (error) console.error(JSON.stringify({event:'audit_write_failed',action,entityType}))
 }
