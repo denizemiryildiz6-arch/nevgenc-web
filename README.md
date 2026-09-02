@@ -223,19 +223,17 @@ Yeni bir proje kurulurken migration dosyaları dosya adındaki sıra korunarak �
 010_topluluk_sayfalari_ve_paylasimlar.sql
 011_nevplus_ve_isletme_duzeltmeleri.sql
 012_security_hardening.sql
-013_production_security_ux.sql
 ```
 
-Mevcut NevGenç veritabanında daha önce 001–012 çalıştırıldıysa yalnızca `013_production_security_ux.sql` uygulanır. Migration dosyaları atlanmadan sırayla tutulmalıdır.
+Daha önce 001–010 uygulanmış mevcut NevGenç veritabanında yalnızca yeni `011` migration’ı çalıştırılır.
 
 ## Edge Functions
 
-Projede üç korumalı Edge Function bulunur:
+Projede iki korumalı Edge Function bulunur:
 
 ```text
 content-admin
 role-admin
-account-delete
 ```
 
 Deploy:
@@ -243,7 +241,6 @@ Deploy:
 ```bash
 npx supabase@latest functions deploy content-admin --use-api
 npx supabase@latest functions deploy role-admin --use-api
-npx supabase@latest functions deploy account-delete --use-api
 ```
 
 Canlı origin kısıtlaması için örnek:
@@ -313,7 +310,7 @@ Hash routing kullanıldığı için rotalar `#/etkinlikler`, `#/topluluklar`, `#
 - Kişisel giriş e-postası kamuya açık yönetici iletişim alanına otomatik kopyalanmaz.
 - Canlıya geçişten önce Auth/SSO, RLS, Edge Functions ve Storage politikaları staging ortamında yeniden test edilmelidir.
 
-Detaylı güvenlik notları `docs/GUVENLIK-v17.md`, UX standardı `docs/UX-v17.md` ve teknik mimari `docs/MIMARI.md` dosyalarındadır.
+Detaylı güvenlik notları `docs/GUVENLIK-v14.md` ve teknik mimari `docs/MIMARI.md` dosyasındadır.
 
 ## Veri yaklaşımı
 
@@ -328,7 +325,7 @@ NevGenç’te doğrulanmayan canlı bilgi üretilmez. Veri kaynağı bulunmayan 
 Bu prensip özellikle yemek menüsü, kütüphane doluluğu, işletme fiyatları, ulaşım koordinatları ve kampüs pazarı için geçerlidir.
 
 
-## v16 güvenlik notu
+## v16.1 güvenlik notu
 
 Üretim öncesi `012_security_hardening.sql` migration'ı uygulanmalıdır. Ardından Edge Functions yeniden deploy edilir:
 
@@ -341,26 +338,6 @@ npx supabase@latest functions deploy account-delete --use-api
 `ALLOWED_ORIGINS` yalnız production originini içermelidir. Platform yöneticilerinde MFA tamamlandıktan sonra `REQUIRE_ADMIN_AAL2=true` secret'ı açılması önerilir. Ayrıntılar `docs/GUVENLIK-v16.md` dosyasındadır.
 
 
-## v17 güvenlik ve UX standardı
+## Auth v16.1 notu
 
-v17 ile kullanıcı deneyimi ve güvenlik aynı akış içinde ele alınmıştır:
-
-- Yönetici/topluluk editörü yazma işlemlerinde TOTP tabanlı iki aşamalı doğrulama (AAL2) kullanılır.
-- Profil içinde güvenlik merkezi; e-posta doğrulaması, MFA durumu, güvenli oturum ve tüm cihazlardan çıkış seçeneklerini gösterir.
-- Yetki atama ve kalıcı silme gibi kritik işlemler özel onay penceresiyle ikinci kez doğrulanır.
-- Hesap silme işleminde hem `HESABIMI SİL` metni hem hesap e-postası sunucu tarafında karşılaştırılır.
-- Topluluk görselleri yüklenmeden önce dosya imzası kontrol edilir, tarayıcıda decode edilir, piksel sınırı uygulanır ve WEBP olarak yeniden kodlanarak EXIF/metadata temizlenir.
-- Topluluk gönderilerine veritabanı seviyesinde saatlik oran sınırı uygulanır.
-- Storage yazma politikaları AAL2 + topluluk yetkisi + güvenli dosya yolu biçimini birlikte kontrol eder.
-- Modal pencerelerde klavye focus trap, Escape davranışı, yükleme durumları, parola görünürlüğü/Caps Lock uyarısı ve parola güç göstergesi bulunur.
-- Offline durumunda kullanıcıya bağlantı uyarısı gösterilir; mobil dokunma hedefleri ve `prefers-reduced-motion` desteği iyileştirilmiştir.
-- GitHub Pages yalnız `index.html`, `404.html`, `.nojekyll` ve `assets/` klasörünü yayınlar; `supabase/`, `docs/` ve test dosyaları web artifact'ına eklenmez.
-- CI her push/PR'da JavaScript syntax, secret pattern, tehlikeli DOM kalıpları ve NevGenç güvenlik smoke testlerini çalıştırır.
-
-Üretimde platform yöneticileri ve içerik editörleri için MFA kapatılmamalıdır. Serdivan Cepte SSO devreye alındığında aynı rol/RLS modeli korunup yalnız kimlik doğrulama giriş noktası değiştirilecektir.
-
-### v17.1 güvenlik merkezi
-
-- Platform yöneticileri için yönetim panelinde ayrı **Güvenlik** sekmesi ve son 40 yetkili işlemden oluşan denetim kaydı bulunur. Audit metadata içine parola, token, secret veya e-posta yazılmaz.
-- Profil güvenlik merkezinden parola yenileme bağlantısı istenebilir; parola değişikliği doğrulanmış e-posta akışı üzerinden yapılır.
-- Yetki ve yönetim işlemlerinde MFA/AAL2 durumu kullanıcıya görünür biçimde gösterilir; güvenli oturum tamamlanmadan kritik işlemler sunucu tarafından reddedilir.
+Parola kurtarma akışı statik GitHub Pages yapısına uygun client-side Supabase implicit flow ile çalışır. Sıfırlama bağlantısı `?auth=recovery` hedefine döner; Supabase oturumu URL fragmentinden güvenli şekilde işledikten sonra yeni parola paneli açılır. SPA route fragmenti parola kurtarma callback'i olarak kullanılmaz. Caps Lock uyarısı yalnız gerçek klavye modifier durumu algılandığında gösterilir.

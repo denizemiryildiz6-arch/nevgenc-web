@@ -1,0 +1,8 @@
+NevGenç v16.1 Auth Hotfix
+- Giriş hata mesajları iyileştirildi.
+- Parola sıfırlama akışı GitHub Pages + Supabase client-only yapısına uyarlandı.
+- Ayrı parola sıfırlama e-posta ekranı eklendi.
+- Recovery linki açıldığında yeni parola formu otomatik açılır.
+- Caps Lock uyarısı yalnız gerçek Caps Lock açıkken gösterilir.
+- Parola göster/gizle kontrolleri eklendi.
+- config.js değiştirilmez.

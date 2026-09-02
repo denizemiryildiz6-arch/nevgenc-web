@@ -10,8 +10,8 @@ NevGenc.supabase = (() => {
     if(!client){
       const key=NevGenc.config.supabase.publishableKey||NevGenc.config.supabase.anonKey;
       client=window.supabase.createClient(NevGenc.config.supabase.url,key,{
-        auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce',storageKey:'nevgenc-auth-v1'},
-        global:{headers:{'x-client-info':'nevgenc-web/17.1.0'}}
+        auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'implicit',storageKey:'nevgenc-auth-v1'},
+        global:{headers:{'x-client-info':'nevgenc-web/16.1.0'}}
       });
     }
     return client;
